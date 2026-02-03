@@ -1,0 +1,23 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Add Web Search Ultra (Coming Soon) tab to Advanced Search Engine UI",
+  "requirements": [
+    {
+      "id": "REQ-9",
+      "summary": "Add a new “Web Search Ultra” tab marked “Coming Soon” to the Advanced Search Engine results UI, showing a non-functional placeholder and a Coming Soon toast on attempted use.",
+      "acceptanceCriteria": [
+        "When a user performs a search (i.e., `submittedSearch` is set and results UI is shown), the tab row includes a new tab for Web Search Ultra that is visibly marked as “Coming Soon”.",
+        "Selecting the Web Search Ultra tab shows a non-functional placeholder state (no backend calls) that explains in English that web/news search is coming soon.",
+        "If the user attempts to use Web Search Ultra (e.g., clicks a button in that placeholder), the UI shows a clear “Coming Soon” toast/message instead of failing silently."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/SearchEnginePage.tsx",
+          "operation": "modify",
+          "description": "Update the search results Tabs UI to include a new TabsTrigger for “Web Search Ultra” with a visible “Coming Soon” label/badge in the tab row, and add a corresponding TabsContent placeholder panel describing that public web/news search is coming soon and not yet available. Ensure selecting this tab does not trigger any search fetching logic by disabling the existing useSearchContent query when the active tab is Web Search Ultra (e.g., avoid enabling the query by passing an empty search term or otherwise gating it for this tab). Add a clear call-to-action button in the placeholder (e.g., “Try Web Search Ultra”) that, when clicked, shows a “Coming Soon” toast/message using the existing toast system instead of performing any real action. Use the existing shadcn-ui Tabs/Badge components and the existing toast utility for messaging; verify the component's usage instructions before implementing."
+        }
+      ]
+    }
+  ]
+}

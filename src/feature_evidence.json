@@ -1,0 +1,27 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-update-the-advanced-search-engine-page-frontend-src-pages-searchenginepage-tsx-to-include-a-new-feature-surfaced-to-users-as-web-search-ultra-and-clearly-labeled-coming-soon-representing-a-future-capability-to-search-the-public-web-news-for-current-information",
+      "featureTitle": "Update the Advanced Search Engine page (`frontend/src/pages/SearchEnginePage.tsx`) to include a new feature surfaced to users as **“Web Search Ultra”** and clearly labeled **“Coming Soon”**, representing a future capability to search the public web/news for current information.",
+      "files": [
+        "frontend/src/pages/SearchEnginePage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "http-outcalls@3.0.0",
+        "stripe@3.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-9"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

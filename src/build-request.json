@@ -1,0 +1,38 @@
+{
+  "kind": "build_request",
+  "title": "Add “Web Search Ultra (Coming Soon)” to Advanced Search Engine UI",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-9",
+      "text": "Update the Advanced Search Engine page (`frontend/src/pages/SearchEnginePage.tsx`) to include a new feature surfaced to users as **“Web Search Ultra”** and clearly labeled **“Coming Soon”**, representing a future capability to search the public web/news for current information.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "also add web search ultra coming soon it knows all news web search just searching something '"
+        ]
+      },
+      "acceptanceCriteria": [
+        "When a user performs a search (i.e., `submittedSearch` is set and results UI is shown), the tab row includes a new tab for Web Search Ultra that is visibly marked as “Coming Soon”.",
+        "Selecting the Web Search Ultra tab shows a non-functional placeholder state (no backend calls) that explains in English that web/news search is coming soon.",
+        "If the user attempts to use Web Search Ultra (e.g., clicks a button in that placeholder), the UI shows a clear “Coming Soon” toast/message instead of failing silently."
+      ]
+    }
+  ],
+  "constraints": [
+    "Frontend changes must not modify any files under `frontend/immutablePaths` (compose existing UI components instead).",
+    "Do not implement real public web/news search or any external API integration as part of this request; this is a “Coming Soon” UI-only feature."
+  ],
+  "nonGoals": [
+    "Implementing real web search/news crawling, indexing, or external API requests",
+    "Adding backend canister methods for web search",
+    "Claiming or implying the feature “knows everything” in user-facing text (keep copy accurate and clearly labeled as Coming Soon)"
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  }
+}

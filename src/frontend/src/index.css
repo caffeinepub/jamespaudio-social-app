@@ -1,0 +1,237 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        --radius: 0.625rem;
+        --background: 0.98 0 0;
+        --foreground: 0.145 0 0;
+        --card: 1 0 0;
+        --card-foreground: 0.145 0 0;
+        --popover: 1 0 0;
+        --popover-foreground: 0.145 0 0;
+        --primary: 0.55 0.22 264;
+        --primary-foreground: 0.99 0 0;
+        --secondary: 0.96 0.01 264;
+        --secondary-foreground: 0.145 0 0;
+        --muted: 0.96 0 0;
+        --muted-foreground: 0.50 0 0;
+        --accent: 0.95 0.02 264;
+        --accent-foreground: 0.145 0 0;
+        --destructive: 0.577 0.245 27.325;
+        --destructive-foreground: 0.985 0 0;
+        --border: 0.90 0 0;
+        --input: 0.90 0 0;
+        --ring: 0.55 0.22 264;
+        --chart-1: 0.646 0.222 41.116;
+        --chart-2: 0.6 0.118 184.704;
+        --chart-3: 0.398 0.07 227.392;
+        --chart-4: 0.828 0.189 84.429;
+        --chart-5: 0.769 0.188 70.08;
+        
+        /* Music theme colors */
+        --music-primary: 0.60 0.20 330;
+        --music-secondary: 0.55 0.18 300;
+        --music-accent: 0.65 0.22 280;
+        
+        /* AI theme colors */
+        --ai-primary: 0.65 0.22 180;
+        --ai-secondary: 0.60 0.20 200;
+        --ai-accent: 0.70 0.24 160;
+        
+        /* Apps theme colors */
+        --apps-primary: 0.60 0.20 120;
+        --apps-secondary: 0.55 0.18 140;
+        --apps-accent: 0.65 0.22 100;
+        
+        /* Creator theme colors */
+        --creator-primary: 0.60 0.20 30;
+        --creator-secondary: 0.55 0.18 50;
+        --creator-accent: 0.65 0.22 10;
+        
+        /* Video theme colors */
+        --video-primary: 0.55 0.20 0;
+        --video-secondary: 0.60 0.18 20;
+        --video-accent: 0.65 0.22 340;
+        
+        /* Movie theme colors */
+        --movie-primary: 0.50 0.18 280;
+        --movie-secondary: 0.55 0.20 260;
+        --movie-accent: 0.60 0.22 300;
+        
+        /* Radio theme colors */
+        --radio-primary: 0.60 0.20 60;
+        --radio-secondary: 0.55 0.18 80;
+        --radio-accent: 0.65 0.22 40;
+        
+        /* Protection theme colors */
+        --protection-primary: 0.55 0.20 140;
+        --protection-secondary: 0.60 0.18 160;
+        --protection-accent: 0.65 0.22 120;
+        
+        /* News theme colors */
+        --news-primary: 0.60 0.20 220;
+        --news-secondary: 0.55 0.18 240;
+        --news-accent: 0.65 0.22 200;
+        
+        /* Robux theme colors */
+        --robux-primary: 0.65 0.22 90;
+        --robux-secondary: 0.60 0.20 110;
+        --robux-accent: 0.70 0.24 70;
+        
+        /* Live TV theme colors */
+        --livetv-primary: 0.60 0.20 280;
+        --livetv-secondary: 0.55 0.18 260;
+        --livetv-accent: 0.65 0.22 300;
+        
+        /* Rewards theme colors */
+        --rewards-primary: 0.65 0.22 40;
+        --rewards-secondary: 0.60 0.20 30;
+        --rewards-accent: 0.70 0.24 20;
+        
+        /* Groups theme colors */
+        --groups-primary: 0.60 0.20 270;
+        --groups-secondary: 0.55 0.18 290;
+        --groups-accent: 0.65 0.22 250;
+        
+        /* Premium/Members theme colors */
+        --premium-primary: 0.65 0.22 45;
+        --premium-secondary: 0.60 0.20 35;
+        --premium-accent: 0.70 0.24 55;
+        
+        /* Live Streams theme colors */
+        --livestream-primary: 0.60 0.20 0;
+        --livestream-secondary: 0.55 0.18 10;
+        --livestream-accent: 0.65 0.22 350;
+        
+        /* Search Engine theme colors */
+        --search-primary: 0.60 0.20 200;
+        --search-secondary: 0.55 0.18 220;
+        --search-accent: 0.65 0.22 180;
+        
+        /* Gaming theme colors */
+        --gaming-primary: 0.60 0.20 290;
+        --gaming-secondary: 0.55 0.18 310;
+        --gaming-accent: 0.65 0.22 270;
+    }
+
+    .dark {
+        --background: 0.12 0.01 264;
+        --foreground: 0.98 0 0;
+        --card: 0.16 0.01 264;
+        --card-foreground: 0.98 0 0;
+        --popover: 0.18 0.01 264;
+        --popover-foreground: 0.98 0 0;
+        --primary: 0.65 0.20 264;
+        --primary-foreground: 0.98 0 0;
+        --secondary: 0.22 0.02 264;
+        --secondary-foreground: 0.98 0 0;
+        --muted: 0.22 0.02 264;
+        --muted-foreground: 0.65 0 0;
+        --accent: 0.28 0.03 264;
+        --accent-foreground: 0.98 0 0;
+        --destructive: 0.60 0.22 27;
+        --destructive-foreground: 0.98 0 0;
+        --border: 0.25 0.02 264;
+        --input: 0.25 0.02 264;
+        --ring: 0.65 0.20 264;
+        --chart-1: 0.488 0.243 264.376;
+        --chart-2: 0.696 0.17 162.48;
+        --chart-3: 0.769 0.188 70.08;
+        --chart-4: 0.627 0.265 303.9;
+        --chart-5: 0.645 0.246 16.439;
+        
+        /* Music theme colors - dark */
+        --music-primary: 0.50 0.18 330;
+        --music-secondary: 0.45 0.16 300;
+        --music-accent: 0.55 0.20 280;
+        
+        /* AI theme colors - dark */
+        --ai-primary: 0.55 0.20 180;
+        --ai-secondary: 0.50 0.18 200;
+        --ai-accent: 0.60 0.22 160;
+        
+        /* Apps theme colors - dark */
+        --apps-primary: 0.50 0.18 120;
+        --apps-secondary: 0.45 0.16 140;
+        --apps-accent: 0.55 0.20 100;
+        
+        /* Creator theme colors - dark */
+        --creator-primary: 0.50 0.18 30;
+        --creator-secondary: 0.45 0.16 50;
+        --creator-accent: 0.55 0.20 10;
+        
+        /* Video theme colors - dark */
+        --video-primary: 0.45 0.18 0;
+        --video-secondary: 0.50 0.16 20;
+        --video-accent: 0.55 0.20 340;
+        
+        /* Movie theme colors - dark */
+        --movie-primary: 0.40 0.16 280;
+        --movie-secondary: 0.45 0.18 260;
+        --movie-accent: 0.50 0.20 300;
+        
+        /* Radio theme colors - dark */
+        --radio-primary: 0.50 0.18 60;
+        --radio-secondary: 0.45 0.16 80;
+        --radio-accent: 0.55 0.20 40;
+        
+        /* Protection theme colors - dark */
+        --protection-primary: 0.45 0.18 140;
+        --protection-secondary: 0.50 0.16 160;
+        --protection-accent: 0.55 0.20 120;
+        
+        /* News theme colors - dark */
+        --news-primary: 0.50 0.18 220;
+        --news-secondary: 0.45 0.16 240;
+        --news-accent: 0.55 0.20 200;
+        
+        /* Robux theme colors - dark */
+        --robux-primary: 0.55 0.20 90;
+        --robux-secondary: 0.50 0.18 110;
+        --robux-accent: 0.60 0.22 70;
+        
+        /* Live TV theme colors - dark */
+        --livetv-primary: 0.50 0.18 280;
+        --livetv-secondary: 0.45 0.16 260;
+        --livetv-accent: 0.55 0.20 300;
+        
+        /* Rewards theme colors - dark */
+        --rewards-primary: 0.55 0.20 40;
+        --rewards-secondary: 0.50 0.18 30;
+        --rewards-accent: 0.60 0.22 20;
+        
+        /* Groups theme colors - dark */
+        --groups-primary: 0.50 0.18 270;
+        --groups-secondary: 0.45 0.16 290;
+        --groups-accent: 0.55 0.20 250;
+        
+        /* Premium/Members theme colors - dark */
+        --premium-primary: 0.55 0.20 45;
+        --premium-secondary: 0.50 0.18 35;
+        --premium-accent: 0.60 0.22 55;
+        
+        /* Live Streams theme colors - dark */
+        --livestream-primary: 0.50 0.18 0;
+        --livestream-secondary: 0.45 0.16 10;
+        --livestream-accent: 0.55 0.20 350;
+        
+        /* Search Engine theme colors - dark */
+        --search-primary: 0.50 0.18 200;
+        --search-secondary: 0.45 0.16 220;
+        --search-accent: 0.55 0.20 180;
+        
+        /* Gaming theme colors - dark */
+        --gaming-primary: 0.50 0.18 290;
+        --gaming-secondary: 0.45 0.16 310;
+        --gaming-accent: 0.55 0.20 270;
+    }
+
+    * {
+        @apply border-border;
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
+}
