@@ -1,39 +1,69 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-03T12:41:07.283Z",
-  "summary": "REQ-9 cannot be fully verified from the provided diff excerpt. The diff shows partial scaffolding for a new 'websearch' tab state (disabling search queries when activeTab === 'websearch'), but does not provide evidence (within the truncated content) that the UI includes a visible “Web Search Ultra (Coming Soon)” tab label, a placeholder explanation view, or a “Coming Soon” toast/message on attempted use.",
+  "generatedAt": "2026-02-03T22:49:00.397Z",
+  "summary": "Frontend chat UI was updated to display a DM-based chat list, show “No conversations yet” empty state, poll/refetch messages in ChatWindow, and refetch shortly after sending. However, the diff summary does not provide direct evidence that the required backend DM canister methods (send/query conversation + inbox partners list) were implemented in backend/main.mo, nor that the required React Query hooks (useGetMessagesWithUser/useSendMessage/useGetDirectMessagePartners) were actually added/implemented in frontend/src/hooks/useQueries.ts (the relevant portions are truncated).",
   "missing_requirements": [
     {
-      "id": "REQ-9",
-      "requirement": "When a user performs a search (submittedSearch is set and results UI is shown), the tab row includes a new tab for “Web Search Ultra” visibly marked “Coming Soon”.",
-      "reason": "The truncated diff does not show any TabsList/TabsTrigger additions or any UI copy/Badge that labels a tab as “Web Search Ultra” and “Coming Soon”. Only a state check for activeTab !== 'websearch' is visible.",
+      "id": "REQ-1",
+      "requirement": "Implement backend-supported 1:1 direct messaging with canister methods to send a DM and query the conversation between caller and another Principal, with participant-only access and chronological ordering.",
+      "reason": "backend/main.mo is truncated and only shows type additions (Message/DirectMessage) in the provided excerpt; no evidence of new shared send/query methods, filtering, sorting, or authorization enforcement is visible in the diff summary.",
       "evidence": [
-        "frontend/src/pages/SearchEnginePage.tsx"
+        "backend/main.mo (truncated excerpt shows types but no DM methods)"
       ]
     },
     {
-      "id": "REQ-9",
-      "requirement": "Selecting the Web Search Ultra tab shows a non-functional placeholder state explaining in English that web/news search is coming soon (no backend calls).",
-      "reason": "While the diff shows logic to disable the search query when activeTab === 'websearch', it does not show any corresponding TabsContent/placeholder UI with explanatory English copy for the web/news search coming soon state.",
+      "id": "REQ-2",
+      "requirement": "Add a backend API to return unique DM conversation partners for the caller ordered by most recent message activity.",
+      "reason": "The diff summary provides no visible canister query method implementation returning ordered unique DM partners; backend/main.mo excerpt is truncated before any such function definitions.",
       "evidence": [
-        "frontend/src/pages/SearchEnginePage.tsx"
+        "backend/main.mo (truncated)"
       ]
     },
     {
-      "id": "REQ-9",
-      "requirement": "If the user attempts to use Web Search Ultra (e.g., clicks a button in that placeholder), the UI shows a clear “Coming Soon” toast/message.",
-      "reason": "The diff excerpt does not show any placeholder button or an onClick handler that triggers a “Coming Soon” toast/message specifically for Web Search Ultra usage attempts.",
+      "id": "REQ-3",
+      "requirement": "Implement useGetMessagesWithUser and useSendMessage in frontend/src/hooks/useQueries.ts to call the new backend DM APIs, ensuring sent messages appear within 1 second and polling/refetch shows new messages automatically.",
+      "reason": "ChatWindow now uses useGetMessagesWithUser/useSendMessage and polls/refetches, but the provided useQueries.ts excerpt is truncated and does not show the implementations of these hooks (or that they no longer return stubs/throw).",
       "evidence": [
-        "frontend/src/pages/SearchEnginePage.tsx"
+        "frontend/src/components/ChatWindow.tsx (uses useGetMessagesWithUser/useSendMessage, polls refetch)",
+        "frontend/src/hooks/useQueries.ts (truncated; DM hooks not shown)"
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "requirement": "Update Chats page sidebar data source to use the backend inbox/chat list of DM partners while keeping search filter working.",
+      "reason": "ChatsPage was updated to use useGetDirectMessagePartners and preserve search filtering UI, but the diff summary does not show the implementation of useGetDirectMessagePartners (hook/API wiring) in useQueries.ts, so the backend-driven data source cannot be confirmed from the provided evidence.",
+      "evidence": [
+        "frontend/src/pages/ChatsPage.tsx (uses useGetDirectMessagePartners + search filter)",
+        "frontend/src/hooks/useQueries.ts (truncated; hook implementation not shown)"
       ]
     }
   ],
-  "hallucinated_features": [],
-  "confidence": 0.56,
+  "hallucinated_features": [
+    {
+      "description": "Chat list items display user “last online” status with an 'Active now' label for users active within 5 minutes, including periodic refetching of last-online timestamps.",
+      "reason": "The BuildRequest focuses on DM send/history and inbox partners ordering; last-online presence formatting and 'Active now' UX are not requested requirements.",
+      "evidence": [
+        "frontend/src/components/ChatList.tsx (useGetLastOnline, formatLastOnline with 'Active now')",
+        "frontend/src/hooks/useQueries.ts (useGetLastOnline refetchInterval: 30000)"
+      ]
+    },
+    {
+      "description": "ChatWindow updates the caller’s last-online timestamp every 30 seconds while the chat is open.",
+      "reason": "The BuildRequest does not require presence/last-online updates as part of DM implementation.",
+      "evidence": [
+        "frontend/src/components/ChatWindow.tsx (useUpdateLastOnline mutate on interval 30000)"
+      ]
+    }
+  ],
+  "confidence": 0.62,
   "changed_files": [
+    "backend/main.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/pages/SearchEnginePage.tsx",
+    "frontend/src/components/ChatList.tsx",
+    "frontend/src/components/ChatWindow.tsx",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/pages/ChatsPage.tsx",
     "project_state.json"
   ]
 }

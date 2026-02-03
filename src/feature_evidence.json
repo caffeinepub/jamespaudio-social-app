@@ -2,10 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-the-advanced-search-engine-page-frontend-src-pages-searchenginepage-tsx-to-include-a-new-feature-surfaced-to-users-as-web-search-ultra-and-clearly-labeled-coming-soon-representing-a-future-capability-to-search-the-public-web-news-for-current-information",
-      "featureTitle": "Update the Advanced Search Engine page (`frontend/src/pages/SearchEnginePage.tsx`) to include a new feature surfaced to users as **“Web Search Ultra”** and clearly labeled **“Coming Soon”**, representing a future capability to search the public web/news for current information.",
+      "featureId": "feature-wire-up-direct-messaging-in-the-react-frontend-by-implementing-usegetmessageswithuser-and-usesendmessage-in-frontend-src-hooks-usequeries-ts-to-call-the-new-backend-dm-apis-and-update-the-chat-ui-so-sending-a-message-immediately-adds-it-to-the-conversation-view-optimistic-update-or-immediate-refetch-and-polling-refetching-shows-new-messages-without-a-full-page-reload",
+      "featureTitle": "Wire up direct messaging in the React frontend by implementing `useGetMessagesWithUser` and `useSendMessage` in `frontend/src/hooks/useQueries.ts` to call the new backend DM APIs, and update the chat UI so sending a message immediately adds it to the conversation view (optimistic update or immediate refetch) and polling/refetching shows new messages without a full page reload.",
       "files": [
-        "frontend/src/pages/SearchEnginePage.tsx"
+        "frontend/src/components/ChatWindow.tsx",
+        "frontend/src/hooks/useQueries.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -19,7 +20,31 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-9"
+        "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-chats-page-sidebar-data-source-to-use-the-backend-inbox-chat-list-for-direct-messages-most-recent-dm-partners-instead-of-relying-only-on-followers-following-lists-while-keeping-the-existing-search-filter-ui-working",
+      "featureTitle": "Update the Chats page sidebar data source to use the backend ‘inbox’/chat list for direct messages (most recent DM partners) instead of relying only on followers/following lists, while keeping the existing search filter UI working.",
+      "files": [
+        "frontend/src/components/ChatList.tsx",
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/ChatsPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "http-outcalls@3.0.0",
+        "stripe@3.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
       ],
       "confidence": "high"
     }

@@ -23,6 +23,13 @@ export interface DailyMysteryItemData {
   'newDailyItemResult' : [] | [MysteryItem],
   'dailyItemBoxOpened' : boolean,
 }
+export interface DirectMessage {
+  'id' : MessageId,
+  'content' : string,
+  'sender' : UserId,
+  'timestamp' : Timestamp,
+  'receiver' : UserId,
+}
 export type ExternalBlob = Uint8Array;
 export interface FeedItem {
   'status' : Status,
@@ -30,6 +37,31 @@ export interface FeedItem {
   'userId' : UserId,
   'timestamp' : Timestamp,
 }
+export interface Group {
+  'id' : GroupId,
+  'members' : Array<UserId>,
+  'name' : string,
+  'createdAt' : Timestamp,
+  'createdBy' : UserId,
+  'description' : string,
+}
+export type GroupId = string;
+export interface GroupMessage {
+  'id' : string,
+  'content' : string,
+  'mediaAttachment' : [] | [MediaAttachment],
+  'sender' : UserId,
+  'groupId' : GroupId,
+  'timestamp' : Timestamp,
+}
+export interface MediaAttachment {
+  'url' : string,
+  'contentType' : string,
+  'mediaType' : { 'audio' : null } |
+    { 'video' : null } |
+    { 'image' : null },
+}
+export type MessageId = bigint;
 export interface MusicUpload {
   'id' : string,
   'title' : string,
@@ -52,7 +84,6 @@ export type MysteryItemType = { 'message' : null } |
   { 'badge' : null } |
   { 'visual' : null } |
   { 'points' : null };
-export type Points = bigint;
 export interface PointsStoreItem {
   'id' : string,
   'name' : string,
@@ -67,6 +98,18 @@ export interface PointsTransaction {
   'description' : string,
   'timestamp' : Timestamp,
   'amount' : bigint,
+}
+export interface SearchEngine {
+  'id' : string,
+  'name' : string,
+  'description' : string,
+  'apiUrl' : string,
+}
+export interface SearchHistoryEntry {
+  'userId' : UserId,
+  'searchTerm' : string,
+  'searchType' : string,
+  'timestamp' : Timestamp,
 }
 export interface SearchResult {
   'bio' : string,
@@ -125,7 +168,7 @@ export interface UserProfile {
   'following' : Array<UserId>,
   'profilePicture' : { 'url' : string, 'contentType' : string },
   'isPremiumMember' : boolean,
-  'points' : Points,
+  'points' : bigint,
   'musicUploads' : Array<MusicUpload>,
 }
 export type UserRole = { 'admin' : null } |
@@ -166,6 +209,7 @@ export interface _SERVICE {
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'activateFreeTrial' : ActorMethod<[], undefined>,
+  'addGroupMember' : ActorMethod<[GroupId, UserId], undefined>,
   'addMysteryItem' : ActorMethod<[MysteryItem], undefined>,
   'addStoreItem' : ActorMethod<[PointsStoreItem], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
@@ -176,14 +220,21 @@ export interface _SERVICE {
     [Array<ShoppingItem>, string, string],
     string
   >,
+  'createGroup' : ActorMethod<[string, string], GroupId>,
   'createProfile' : ActorMethod<[string, string], undefined>,
   'deleteMysteryItem' : ActorMethod<[string], undefined>,
   'deleteStoreItem' : ActorMethod<[string], undefined>,
   'getAllMysteryItems' : ActorMethod<[], Array<MysteryItem>>,
   'getAllProfiles' : ActorMethod<[], Array<UserProfile>>,
+  'getAvailableSearchEngines' : ActorMethod<[], Array<SearchEngine>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
+  'getDefaultSearchEngine' : ActorMethod<[], string>,
+  'getDirectMessagePartners' : ActorMethod<[], Array<Principal>>,
+  'getDirectMessages' : ActorMethod<[Principal], Array<DirectMessage>>,
   'getFriendsMusicUploads' : ActorMethod<[UserId], Array<MusicUpload>>,
+  'getGroup' : ActorMethod<[GroupId], [] | [Group]>,
+  'getGroupMessages' : ActorMethod<[GroupId], Array<GroupMessage>>,
   'getLastClaimedMysteryItem' : ActorMethod<[UserId], [] | [MysteryItem]>,
   'getLastOnline' : ActorMethod<[UserId], Timestamp>,
   'getLastOnlineForMultipleUsers' : ActorMethod<
@@ -194,8 +245,10 @@ export interface _SERVICE {
   'getPointsHistory' : ActorMethod<[], Array<PointsTransaction>>,
   'getProfile' : ActorMethod<[UserId], UserProfile>,
   'getRecentStatuses' : ActorMethod<[bigint], Array<FeedItem>>,
+  'getSearchHistory' : ActorMethod<[], Array<SearchHistoryEntry>>,
   'getStoreItems' : ActorMethod<[], Array<PointsStoreItem>>,
   'getStripeSessionStatus' : ActorMethod<[string], StripeSessionStatus>,
+  'getUserGroups' : ActorMethod<[], Array<Group>>,
   'getUserMysteryItems' : ActorMethod<[UserId], Array<DailyMysteryItemData>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
@@ -203,8 +256,15 @@ export interface _SERVICE {
   'isStripeConfigured' : ActorMethod<[], boolean>,
   'purchasePoints' : ActorMethod<[bigint], string>,
   'purchaseStoreItem' : ActorMethod<[string], string>,
+  'recordSearchHistory' : ActorMethod<[string, string], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'searchProfiles' : ActorMethod<[string], Array<SearchResult>>,
+  'sendDirectMessage' : ActorMethod<[Principal, string], undefined>,
+  'sendGroupMessage' : ActorMethod<
+    [GroupId, string, [] | [MediaAttachment]],
+    undefined
+  >,
+  'setDefaultSearchEngine' : ActorMethod<[string], undefined>,
   'setStripeConfiguration' : ActorMethod<[StripeConfiguration], undefined>,
   'spendPoints' : ActorMethod<[bigint], string>,
   'transform' : ActorMethod<[TransformationInput], TransformationOutput>,

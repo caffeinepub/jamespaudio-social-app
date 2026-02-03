@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Settings as SettingsIcon, Music, Volume2, Mic } from 'lucide-react';
+import { Settings as SettingsIcon, Music, Volume2, Mic, VolumeX } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { notifyVoiceSettingsChange } from '../hooks/useVoiceSettings';
 
 export default function SettingsPage() {
   const [bgMusicEnabled, setBgMusicEnabled] = useState(() => {
@@ -23,6 +24,16 @@ export default function SettingsPage() {
     return saved !== null ? JSON.parse(saved) : true; // Default to enabled
   });
 
+  const [aiVoiceVolume, setAiVoiceVolume] = useState(() => {
+    const saved = localStorage.getItem('aiVoiceVolume');
+    return saved ? parseInt(saved) : 100; // Default to 100%
+  });
+
+  const [aiVoiceMuted, setAiVoiceMuted] = useState(() => {
+    const saved = localStorage.getItem('aiVoiceMuted');
+    return saved !== null ? JSON.parse(saved) : false; // Default to not muted
+  });
+
   useEffect(() => {
     localStorage.setItem('bgMusicEnabled', JSON.stringify(bgMusicEnabled));
   }, [bgMusicEnabled]);
@@ -33,7 +44,18 @@ export default function SettingsPage() {
 
   useEffect(() => {
     localStorage.setItem('aiVoiceEnabled', JSON.stringify(aiVoiceEnabled));
+    notifyVoiceSettingsChange();
   }, [aiVoiceEnabled]);
+
+  useEffect(() => {
+    localStorage.setItem('aiVoiceVolume', aiVoiceVolume.toString());
+    notifyVoiceSettingsChange();
+  }, [aiVoiceVolume]);
+
+  useEffect(() => {
+    localStorage.setItem('aiVoiceMuted', JSON.stringify(aiVoiceMuted));
+    notifyVoiceSettingsChange();
+  }, [aiVoiceMuted]);
 
   const handleBgMusicToggle = (enabled: boolean) => {
     setBgMusicEnabled(enabled);
@@ -47,6 +69,15 @@ export default function SettingsPage() {
   const handleAiVoiceToggle = (enabled: boolean) => {
     setAiVoiceEnabled(enabled);
     toast.success(enabled ? 'AI voice responses enabled' : 'AI voice responses disabled');
+  };
+
+  const handleAiVoiceVolumeChange = (value: number[]) => {
+    setAiVoiceVolume(value[0]);
+  };
+
+  const handleAiVoiceMuteToggle = (muted: boolean) => {
+    setAiVoiceMuted(muted);
+    toast.success(muted ? 'AI voice muted' : 'AI voice unmuted');
   };
 
   return (
@@ -151,6 +182,50 @@ export default function SettingsPage() {
                     checked={aiVoiceEnabled}
                     onCheckedChange={handleAiVoiceToggle}
                   />
+                </div>
+
+                {/* AI Voice Mute Toggle */}
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="ai-voice-mute" className="text-base flex items-center gap-2">
+                      <VolumeX className="h-4 w-4" />
+                      Mute AI Voice
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Temporarily mute voice responses without changing settings
+                    </p>
+                  </div>
+                  <Switch
+                    id="ai-voice-mute"
+                    checked={aiVoiceMuted}
+                    onCheckedChange={handleAiVoiceMuteToggle}
+                  />
+                </div>
+
+                {/* AI Voice Volume Control */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="ai-voice-volume" className="text-base flex items-center gap-2">
+                      <Volume2 className="h-4 w-4" />
+                      AI Voice Volume
+                    </Label>
+                    <span className="text-sm text-muted-foreground">{aiVoiceVolume}%</span>
+                  </div>
+                  <Slider
+                    id="ai-voice-volume"
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={[aiVoiceVolume]}
+                    onValueChange={handleAiVoiceVolumeChange}
+                    disabled={!aiVoiceEnabled}
+                    className="w-full"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {aiVoiceEnabled 
+                      ? 'Adjust the volume of AI voice responses' 
+                      : 'Enable AI voice responses to adjust volume'}
+                  </p>
                 </div>
 
                 <div className="bg-muted p-4 rounded-lg space-y-2">

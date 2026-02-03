@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useGetCallerUserProfile } from '../hooks/useQueries';
+import { useGetDirectMessagePartners, useSearchProfiles } from '../hooks/useQueries';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
@@ -9,23 +9,18 @@ import ChatWindow from '../components/ChatWindow';
 import type { Principal } from '@dfinity/principal';
 
 export default function ChatsPage() {
-  const { data: userProfile } = useGetCallerUserProfile();
+  const { data: dmPartners = [] } = useGetDirectMessagePartners();
   const [selectedUserId, setSelectedUserId] = useState<Principal | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const { data: searchResults = [] } = useSearchProfiles(searchQuery);
 
-  // Get list of users to chat with (following + followers)
-  const chatUsers = userProfile
-    ? Array.from(
-        new Set([
-          ...userProfile.following.map((p) => p.toString()),
-          ...userProfile.followers.map((p) => p.toString()),
-        ])
-      )
-    : [];
+  // Convert DM partners to string array for filtering
+  const chatUserIds = dmPartners.map((p) => p.toString());
 
-  const filteredUsers = chatUsers.filter((userId) =>
-    userId.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter by search query
+  const filteredUsers = searchQuery.trim()
+    ? searchResults.map((result) => result.userId.toString())
+    : chatUserIds;
 
   return (
     <div className="h-full flex">
@@ -35,7 +30,7 @@ export default function ChatsPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search chats..."
+              placeholder="Search users..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"

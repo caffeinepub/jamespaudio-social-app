@@ -1,35 +1,92 @@
 {
   "kind": "build_request",
-  "title": "Add “Web Search Ultra (Coming Soon)” to Advanced Search Engine UI",
+  "title": "Implement direct instant messaging (1:1 DMs) end-to-end",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-9",
-      "text": "Update the Advanced Search Engine page (`frontend/src/pages/SearchEnginePage.tsx`) to include a new feature surfaced to users as **“Web Search Ultra”** and clearly labeled **“Coming Soon”**, representing a future capability to search the public web/news for current information.",
+      "id": "REQ-1",
+      "text": "Implement backend-supported 1:1 direct messaging so authenticated users can send a message to another user and retrieve the full conversation history with that user. Add Motoko canister methods for (a) sending a direct message and (b) querying direct messages between the caller and a specified other user, returning messages in chronological order and enforcing that only the two participants can access the conversation.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "also add instant messages"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Backend exposes a shared method to send a direct message from the caller to a receiver Principal with non-empty content.",
+        "Backend exposes a query method to fetch the conversation between the caller and a specified other Principal; it returns only messages where (sender==caller AND receiver==other) OR (sender==other AND receiver==caller).",
+        "Returned messages are sorted oldest-to-newest (ascending by timestamp, stable for equal timestamps).",
+        "Unauthorized access is rejected (e.g., a caller cannot fetch a conversation they are not a participant in)."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Add a backend API to support an ‘inbox’/chat list for direct messages: provide a method that returns the list of unique conversation partners for the caller (Principals) ordered by most recent message activity, so the frontend Chats page can show real DM threads even if follow/unfollow is not implemented.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "also add instant messages"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Backend exposes a query method that returns unique DM partner Principals for the caller.",
+        "The list is ordered by latest message timestamp descending across each partner thread.",
+        "Partners include users who have either sent a message to the caller or received a message from the caller."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Wire up direct messaging in the React frontend by implementing `useGetMessagesWithUser` and `useSendMessage` in `frontend/src/hooks/useQueries.ts` to call the new backend DM APIs, and update the chat UI so sending a message immediately adds it to the conversation view (optimistic update or immediate refetch) and polling/refetching shows new messages without a full page reload.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "also add web search ultra coming soon it knows all news web search just searching something '"
+          "also add instant messages"
         ]
       },
       "acceptanceCriteria": [
-        "When a user performs a search (i.e., `submittedSearch` is set and results UI is shown), the tab row includes a new tab for Web Search Ultra that is visibly marked as “Coming Soon”.",
-        "Selecting the Web Search Ultra tab shows a non-functional placeholder state (no backend calls) that explains in English that web/news search is coming soon.",
-        "If the user attempts to use Web Search Ultra (e.g., clicks a button in that placeholder), the UI shows a clear “Coming Soon” toast/message instead of failing silently."
+        "`useSendMessage` no longer throws 'Messaging functionality not yet implemented' and successfully sends messages via the canister.",
+        "`useGetMessagesWithUser` no longer returns an empty array stub and displays real conversation history.",
+        "After sending a message in `ChatWindow`, the message appears in the UI within 1 second without manual refresh.",
+        "Polling/refetch in `ChatWindow` results in newly received messages appearing automatically."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Update the Chats page sidebar data source to use the backend ‘inbox’/chat list for direct messages (most recent DM partners) instead of relying only on followers/following lists, while keeping the existing search filter UI working.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "also add instant messages"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Chats sidebar shows users you have direct-messaged with, even if followers/following are empty.",
+        "Search filtering still narrows the displayed chat list based on the existing search input.",
+        "Selecting a user from the chat list opens the correct 1:1 conversation in `ChatWindow`."
       ]
     }
   ],
   "constraints": [
-    "Frontend changes must not modify any files under `frontend/immutablePaths` (compose existing UI components instead).",
-    "Do not implement real public web/news search or any external API integration as part of this request; this is a “Coming Soon” UI-only feature."
+    "Respect the single-actor backend architecture: all Motoko logic must live in backend/main.mo; add backend APIs there.",
+    "Do not edit any frontend files under the immutable paths listed in SYSTEM_CONTEXT (compose existing hooks/components instead).",
+    "Do not implement WebSockets or any real-time socket layer; use polling/refetch patterns already used by the chat components."
   ],
   "nonGoals": [
-    "Implementing real web search/news crawling, indexing, or external API requests",
-    "Adding backend canister methods for web search",
-    "Claiming or implying the feature “knows everything” in user-facing text (keep copy accurate and clearly labeled as Coming Soon)"
+    "Group messaging changes (group chat already exists); this request is specifically for 1:1 direct messages.",
+    "Follow/unfollow implementation (currently stubbed) unless required for DM functionality.",
+    "Read receipts, typing indicators, message reactions, or push notifications."
   ],
   "imageRequirements": {
     "required": [],

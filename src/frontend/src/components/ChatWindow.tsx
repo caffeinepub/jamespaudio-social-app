@@ -19,7 +19,7 @@ interface ChatWindowProps {
 export default function ChatWindow({ userId, onBack }: ChatWindowProps) {
   const { identity } = useInternetIdentity();
   const { data: profile } = useGetProfile(userId);
-  const { data: messages, isLoading, refetch } = useGetMessagesWithUser(userId);
+  const { data: messages = [], isLoading, refetch } = useGetMessagesWithUser(userId);
   const sendMessage = useSendMessage();
   const updateLastOnline = useUpdateLastOnline();
   const [messageText, setMessageText] = useState('');

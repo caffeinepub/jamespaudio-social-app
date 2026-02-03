@@ -1,19 +1,18 @@
 import Map "mo:core/Map";
 import Iter "mo:core/Iter";
+import List "mo:core/List";
 import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
 import Text "mo:core/Text";
 import Nat "mo:core/Nat";
-import List "mo:core/List";
-import Time "mo:core/Time";
 import Int "mo:core/Int";
-import Blob "mo:core/Blob";
-import OutCall "http-outcalls/outcall";
-import Stripe "stripe/stripe";
+import Time "mo:core/Time";
 import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
-import MixinAuthorization "authorization/MixinAuthorization";
+import Stripe "stripe/stripe";
+import OutCall "http-outcalls/outcall";
 import AccessControl "authorization/access-control";
+import MixinAuthorization "authorization/MixinAuthorization";
 
 actor {
   include MixinStorage();
@@ -25,6 +24,7 @@ actor {
   // Types
   public type UserId = Principal;
   public type MessageId = Nat;
+  public type GroupId = Text;
   public type Timestamp = Int;
   public type Points = Nat;
   public type Status = Text;
@@ -36,7 +36,7 @@ actor {
     followers : [UserId];
     following : [UserId];
     status : Status;
-    points : Points;
+    points : Nat;
     createdAt : Timestamp;
     updatedAt : Timestamp;
     lastDailyRewardClaim : ?Timestamp;
@@ -65,6 +65,38 @@ actor {
     receiver : UserId;
     content : Text;
     timestamp : Timestamp;
+  };
+
+  public type DirectMessage = {
+    id : MessageId;
+    sender : UserId;
+    receiver : UserId;
+    content : Text;
+    timestamp : Timestamp;
+  };
+
+  public type Group = {
+    id : GroupId;
+    name : Text;
+    description : Text;
+    createdBy : UserId;
+    members : [UserId];
+    createdAt : Timestamp;
+  };
+
+  public type GroupMessage = {
+    id : Text;
+    groupId : GroupId;
+    sender : UserId;
+    content : Text;
+    mediaAttachment : ?MediaAttachment;
+    timestamp : Timestamp;
+  };
+
+  public type MediaAttachment = {
+    url : Text;
+    contentType : Text;
+    mediaType : { #image; #video; #audio };
   };
 
   public type SearchResult = {
@@ -234,6 +266,35 @@ actor {
     OutCall.transform(input);
   };
 
+  // Search Engine Store Types and State
+  public type SearchEngine = {
+    id : Text;
+    name : Text;
+    description : Text;
+    apiUrl : Text;
+  };
+
+  public type UserSearchPreferences = {
+    defaultSearchEngine : Text;
+    searchHistory : List.List<SearchHistoryEntry>;
+  };
+
+  let availableSearchEngines = Map.fromIter<Text, SearchEngine>(
+    [
+      (
+        "ultra_search",
+        {
+          id = "ultra_search";
+          name = "Ultra Search";
+          description = "Fast and accurate web search engine";
+          apiUrl = "https://api.ultrasearch.com/search";
+        },
+      ),
+    ].values()
+  );
+
+  let userSearchPreferences = Map.empty<UserId, UserSearchPreferences>();
+
   // Persistent state
   let profiles = Map.empty<UserId, UserProfile>();
   let publishedApps = Map.empty<Text, PublishedApp>();
@@ -247,7 +308,15 @@ actor {
   let searchHistory = List.empty<SearchHistoryEntry>();
   let streamIdCounter = Map.empty<UserId, Nat>();
 
-  // MusicUpload type
+  // Group messaging state
+  let groups = Map.empty<GroupId, Group>();
+  let groupMessages = Map.empty<GroupId, List.List<GroupMessage>>();
+  let groupMessageCounter = Map.empty<GroupId, Nat>();
+
+  // Direct messages state (conversation history)
+  let directMessages = List.empty<DirectMessage>();
+  var directMessageIdCounter : MessageId = 0;
+
   public type MusicUpload = {
     id : Text;
     title : Text;
@@ -332,12 +401,10 @@ actor {
       case (null) { () };
       case (?profile) {
         let updatedPoints = if (amount >= 0) {
-          profile.points + amount.toNat();
-        } else {
-          if (profile.points >= (-amount).toNat()) { profile.points - (-amount).toNat() } else {
-            0;
-          };
-        };
+          amount.toNat();
+        } else if (profile.points >= (-amount).toNat()) {
+          profile.points - (-amount).toNat();
+        } else { 0 };
         let updatedProfile = {
           profile with
           points = updatedPoints;
@@ -375,6 +442,15 @@ actor {
       case (null) { 1 };
       case (?profile) {
         getDailyLoginStreak(profile, Time.now());
+      };
+    };
+  };
+
+  func isGroupMember(groupId : GroupId, userId : UserId) : Bool {
+    switch (groups.get(groupId)) {
+      case (null) { false };
+      case (?group) {
+        group.members.find(func(m) { m == userId }) != null;
       };
     };
   };
@@ -418,6 +494,329 @@ actor {
       case (null) { () };
       case (?points) { await updatePointsBalance(userId, points) };
     };
+  };
+
+  public shared ({ caller }) func sendDirectMessage(receiver : Principal, content : Text) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can send messages");
+    };
+
+    let senderId = caller;
+    let newDirectMessage : DirectMessage = {
+      id = directMessageIdCounter;
+      sender = senderId;
+      receiver;
+      content;
+      timestamp = Time.now();
+    };
+
+    // Increment the ID after assignment
+    directMessageIdCounter += 1;
+
+    directMessages.add(newDirectMessage);
+  };
+
+  public query ({ caller }) func getDirectMessages(otherUser : Principal) : async [DirectMessage] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view messages");
+    };
+
+    // Authorization: Only the two participants can access their conversation
+    let callerMessages = directMessages.values().filter(
+      func(message) { 
+        (message.sender == caller and message.receiver == otherUser) or 
+        (message.sender == otherUser and message.receiver == caller) 
+      }
+    );
+    
+    callerMessages.toArray();
+  };
+
+  // Returns list of unique conversation partners ordered by most recent message
+  public query ({ caller }) func getDirectMessagePartners() : async [Principal] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view conversation partners");
+    };
+
+    // Build a map of partners with their most recent message timestamp
+    let partnerMap = Map.empty<Principal, Timestamp>();
+
+    for (message in directMessages.values()) {
+      if (message.sender == caller) {
+        let currentTimestamp = switch (partnerMap.get(message.receiver)) {
+          case (null) { message.timestamp };
+          case (?existingTimestamp) {
+            if (message.timestamp > existingTimestamp) {
+              message.timestamp;
+            } else {
+              existingTimestamp;
+            };
+          };
+        };
+        partnerMap.add(message.receiver, currentTimestamp);
+      };
+
+      if (message.receiver == caller) {
+        let currentTimestamp = switch (partnerMap.get(message.sender)) {
+          case (null) { message.timestamp };
+          case (?existingTimestamp) {
+            if (message.timestamp > existingTimestamp) {
+              message.timestamp;
+            } else {
+              existingTimestamp;
+            };
+          };
+        };
+        partnerMap.add(message.sender, currentTimestamp);
+      };
+    };
+
+    // Convert to array and sort by most recent timestamp
+    let partnersArray = partnerMap.toArray();
+    let sortedPartners = partnersArray.sort(
+      func(a : (Principal, Timestamp), b : (Principal, Timestamp)) : { #less; #equal; #greater } {
+        let (_, timestampA) = a;
+        let (_, timestampB) = b;
+        if (timestampA > timestampB) { #less }
+        else if (timestampA < timestampB) { #greater }
+        else { #equal }
+      }
+    );
+
+    sortedPartners.map(func(entry : (Principal, Timestamp)) : Principal {
+      let (partner, _) = entry;
+      partner
+    });
+  };
+
+  // Search Engine Store experience implementation
+  public query func getAvailableSearchEngines() : async [SearchEngine] {
+    // No authorization - allow guests to browse search engines
+    availableSearchEngines.values().toArray();
+  };
+
+  public shared ({ caller }) func setDefaultSearchEngine(searchEngineId : Text) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can set default search engine");
+    };
+
+    switch (availableSearchEngines.get(searchEngineId)) {
+      case (null) { Runtime.trap("Search engine not found") };
+      case (?_) {
+        switch (userSearchPreferences.get(caller)) {
+          case (null) {
+            let newPrefs = {
+              defaultSearchEngine = searchEngineId;
+              searchHistory = List.empty<SearchHistoryEntry>();
+            };
+            userSearchPreferences.add(caller, newPrefs);
+          };
+          case (?existingPrefs) {
+            let updatedPrefs = {
+              existingPrefs with
+              defaultSearchEngine = searchEngineId;
+            };
+            userSearchPreferences.add(caller, updatedPrefs);
+          };
+        };
+      };
+    };
+  };
+
+  public query ({ caller }) func getDefaultSearchEngine() : async Text {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can get default search engine");
+    };
+
+    switch (userSearchPreferences.get(caller)) {
+      case (null) {
+        // Return the first search engine as default if none set
+        let engines = availableSearchEngines.toArray();
+        if (engines.size() > 0) {
+          let (firstId, _) = engines[0];
+          firstId;
+        } else { "" };
+      };
+      case (?prefs) { prefs.defaultSearchEngine };
+    };
+  };
+
+  public shared ({ caller }) func recordSearchHistory(searchTerm : Text, searchEngineId : Text) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can record search history");
+    };
+
+    let entry : SearchHistoryEntry = {
+      userId = caller;
+      searchTerm;
+      searchType = searchEngineId;
+      timestamp = Time.now();
+    };
+
+    // Add the entry to the global search history list
+    searchHistory.add(entry);
+
+    // Add the entry to the user's search preferences (keep last 20 entries)
+    switch (userSearchPreferences.get(caller)) {
+      case (null) {
+        let newPrefs = {
+          defaultSearchEngine = searchEngineId;
+          searchHistory = List.fromArray<SearchHistoryEntry>([entry]);
+        };
+        userSearchPreferences.add(caller, newPrefs);
+      };
+      case (?existingPrefs) {
+        let currentHistory = existingPrefs.searchHistory.toArray();
+        let newHistoryArray = [entry].concat(if (currentHistory.size() > 19) { currentHistory.sliceToArray(0, 19) } else { currentHistory });
+        let newHistoryList = List.fromArray<SearchHistoryEntry>(newHistoryArray);
+        let updatedPrefs = {
+          existingPrefs with
+          searchHistory = newHistoryList;
+        };
+        userSearchPreferences.add(caller, updatedPrefs);
+      };
+    };
+  };
+
+  public query ({ caller }) func getSearchHistory() : async [SearchHistoryEntry] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view search history");
+    };
+
+    switch (userSearchPreferences.get(caller)) {
+      case (null) { [] };
+      case (?prefs) { prefs.searchHistory.toArray() };
+    };
+  };
+
+  // Group Management
+  public shared ({ caller }) func createGroup(name : Text, description : Text) : async GroupId {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can create groups");
+    };
+
+    let groupId = caller.toText() # "_" # Time.now().toText();
+    let newGroup : Group = {
+      id = groupId;
+      name;
+      description;
+      createdBy = caller;
+      members = [caller];
+      createdAt = Time.now();
+    };
+
+    groups.add(groupId, newGroup);
+    groupMessages.add(groupId, List.empty<GroupMessage>());
+    groupMessageCounter.add(groupId, 0);
+
+    groupId;
+  };
+
+  public shared ({ caller }) func addGroupMember(groupId : GroupId, userId : UserId) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can add group members");
+    };
+
+    switch (groups.get(groupId)) {
+      case (null) { Runtime.trap("Group not found") };
+      case (?group) {
+        // Only group creator or existing members can add new members
+        if (group.createdBy != caller and not isGroupMember(groupId, caller)) {
+          Runtime.trap("Unauthorized: Only group creator or members can add new members");
+        };
+
+        // Check if user is already a member
+        if (isGroupMember(groupId, userId)) {
+          Runtime.trap("User is already a member of this group");
+        };
+
+        let updatedGroup = {
+          group with
+          members = group.members.concat([userId]);
+        };
+        groups.add(groupId, updatedGroup);
+      };
+    };
+  };
+
+  public shared ({ caller }) func sendGroupMessage(groupId : GroupId, content : Text, mediaAttachment : ?MediaAttachment) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can send group messages");
+    };
+
+    // Verify caller is a group member
+    if (not isGroupMember(groupId, caller)) {
+      Runtime.trap("Unauthorized: Only group members can send messages");
+    };
+
+    let messageId = switch (groupMessageCounter.get(groupId)) {
+      case (null) { 0 };
+      case (?count) { count };
+    };
+
+    let newMessage : GroupMessage = {
+      id = groupId # "_" # messageId.toText();
+      groupId;
+      sender = caller;
+      content;
+      mediaAttachment;
+      timestamp = Time.now();
+    };
+
+    // Add message to group's message list
+    switch (groupMessages.get(groupId)) {
+      case (null) {
+        groupMessages.add(groupId, List.fromArray<GroupMessage>([newMessage]));
+      };
+      case (?existingMessages) {
+        existingMessages.add(newMessage);
+      };
+    };
+
+    groupMessageCounter.add(groupId, messageId + 1);
+  };
+
+  public query ({ caller }) func getGroupMessages(groupId : GroupId) : async [GroupMessage] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view group messages");
+    };
+
+    // Verify caller is a group member
+    if (not isGroupMember(groupId, caller)) {
+      Runtime.trap("Unauthorized: Only group members can view messages");
+    };
+
+    switch (groupMessages.get(groupId)) {
+      case (null) { [] };
+      case (?messages) { messages.toArray() };
+    };
+  };
+
+  public query ({ caller }) func getGroup(groupId : GroupId) : async ?Group {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view groups");
+    };
+
+    // Verify caller is a group member
+    if (not isGroupMember(groupId, caller)) {
+      Runtime.trap("Unauthorized: Only group members can view group details");
+    };
+
+    groups.get(groupId);
+  };
+
+  public query ({ caller }) func getUserGroups() : async [Group] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view their groups");
+    };
+
+    let userGroups = groups.values().filter(
+      func(group) {
+        group.members.find(func(m) { m == caller }) != null;
+      }
+    );
+
+    userGroups.toArray();
   };
 
   // User Profile Operations
@@ -531,11 +930,8 @@ actor {
     };
   };
 
-  public query ({ caller }) func getProfile(userId : UserId) : async UserProfile {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only authenticated users can view profiles");
-    };
-
+  public query func getProfile(userId : UserId) : async UserProfile {
+    // Public access - anyone can view profiles (including guests)
     switch (profiles.get(userId)) {
       case (null) { Runtime.trap("Profile not found") };
       case (?profile) { profile };
@@ -570,11 +966,8 @@ actor {
     profiles.values().toArray();
   };
 
-  public query ({ caller }) func searchProfiles(searchTerm : Text) : async [SearchResult] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only authenticated users can search profiles");
-    };
-
+  public query func searchProfiles(searchTerm : Text) : async [SearchResult] {
+    // Public access - allow guests to search profiles for discovery
     let searchTermLower = searchTerm.toLower();
     let filtered = profiles.entries().filter(
       func((_, p)) {
@@ -639,11 +1032,8 @@ actor {
     results.toArray();
   };
 
-  public query ({ caller }) func getRecentStatuses(limit : Nat) : async [FeedItem] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only authenticated users can view recent statuses");
-    };
-
+  public query func getRecentStatuses(limit : Nat) : async [FeedItem] {
+    // Public access - allow guests to view recent statuses for discovery
     let resultList = List.empty<FeedItem>();
     for ((userId, profile) in profiles.entries()) {
       resultList.add({
@@ -736,7 +1126,7 @@ actor {
           updatedAt = Time.now();
         };
         profiles.add(caller, updatedProfile);
-        await recordTransaction(caller, pointsToBuy, #purchase, "Points purchased (Stripe coming soon)");
+        await recordTransaction(caller, pointsToBuy.toInt(), #purchase, "Points purchased (Stripe coming soon)");
         "Points purchased successfully";
       };
     };
@@ -862,7 +1252,11 @@ actor {
       case (null) { "Profile not found" };
       case (?profile) {
         if (requiredPoints > profile.points) {
-          "You need " # (requiredPoints - profile.points).toText() # " more points";
+          let difference = (requiredPoints - profile.points).toInt();
+          if (difference < 0) {
+            Runtime.trap("Insufficient points to purchase item");
+          };
+          difference.toText();
         } else { "Eligible" };
       };
     };
@@ -900,9 +1294,13 @@ actor {
   };
 
   public query ({ caller }) func getFriendsMusicUploads(userId : UserId) : async [MusicUpload] {
-    // Authorization: Any authenticated user can view any user's friends' music for discovery purposes
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only authenticated users can view friends' music");
+    };
+
+    // Users can only view their own friends' music or the target user must be the caller
+    if (caller != userId) {
+      Runtime.trap("Unauthorized: Can only view your own friends' music");
     };
 
     // Fetch the user's profile to get their friends

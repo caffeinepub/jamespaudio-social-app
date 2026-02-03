@@ -1,34 +1,73 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-03T12:41:07.319Z",
+  "generatedAt": "2026-02-03T22:49:00.425Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 1,
-    "implemented": 1,
+    "total": 4,
+    "implemented": 2,
     "items": [
       {
-        "id": "REQ-9",
-        "summary": "Update the Advanced Search Engine page (`frontend/src/pages/SearchEnginePage.tsx`) to include a new feature surfaced to users as **“Web Search Ultra”** and clearly labeled **“Coming Soon”**, representing a future capability to search the public web/news for current information.",
+        "id": "REQ-1",
+        "summary": "Implement backend-supported 1:1 direct messaging so authenticated users can send a message to another user and retrieve the full conversation history with that user. Add Motoko canister methods for (a) sending a direct message and (b) querying direct messages between the caller and a specified other user, returning messages in chronological order and enforcing that only the two participants can access the conversation.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-2",
+        "summary": "Add a backend API to support an ‘inbox’/chat list for direct messages: provide a method that returns the list of unique conversation partners for the caller (Principals) ordered by most recent message activity, so the frontend Chats page can show real DM threads even if follow/unfollow is not implemented.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Wire up direct messaging in the React frontend by implementing `useGetMessagesWithUser` and `useSendMessage` in `frontend/src/hooks/useQueries.ts` to call the new backend DM APIs, and update the chat UI so sending a message immediately adds it to the conversation view (optimistic update or immediate refetch) and polling/refetching shows new messages without a full page reload.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/SearchEnginePage.tsx"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/ChatWindow.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/SearchEnginePage.tsx"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/ChatWindow.tsx"
+        ]
+      },
+      {
+        "id": "REQ-4",
+        "summary": "Update the Chats page sidebar data source to use the backend ‘inbox’/chat list for direct messages (most recent DM partners) instead of relying only on followers/following lists, while keeping the existing search filter UI working.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/ChatsPage.tsx",
+          "frontend/src/components/ChatList.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/ChatsPage.tsx",
+          "frontend/src/components/ChatList.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/pages/SearchEnginePage.tsx",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/components/ChatList.tsx",
+    "frontend/src/components/ChatWindow.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/pages/ChatsPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

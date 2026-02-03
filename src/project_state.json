@@ -1,242 +1,313 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 14,
-  "summary": "JAMESPaudio is evolving into a fuller “JAMESPaudio Social App” creative social hub on the Internet Computer: authenticated social/chat + profiles, points/rewards economy (including store/publishing unlock), groups (user-create/join), richer help/FAQ, expanded search (including improved math/voice features and placeholders like Web Search Ultra), and additional content modules (e.g., Live TV) alongside existing simulated/demo modules.",
+  "projectStateVersion": 3,
+  "summary": "JAMESPaudio is a decentralized “creative social hub” built on the Internet Computer. It has a React/TypeScript frontend (Tailwind + shadcn/ui) and a Motoko canister backend. Authentication uses Internet Identity; the backend applies role-based access control (admin/user/guest) initialized via a secret token. Implemented backend-backed features include user profiles, public profile discovery/search, presence (last-online) tracking, points wallet + transaction history, points store (browse/redeem) and demo points purchase, daily rewards and a daily “mystery box” (Daily Items Secret), premium membership/free-trial state, music uploads via IC blob storage (ExternalBlob) and friends’ music discovery, search engine provider preferences and per-user search history, and groups with member-only group messaging plus an in-chat UI flow to add new members. Several additional modules exist as frontend-only simulated/placeholder experiences (e.g., AI song generator, live TV, radio, videos/movies, creator studio, roadmaps/help pages).",
   "existing_features": [
     {
       "id": "IF-1",
-      "title": "Internet Identity authentication & session management",
+      "title": "Internet Identity authentication",
       "synonyms": [
         "II login",
-        "AuthClient login"
+        "AuthClient"
       ],
-      "description": "Users authenticate via Internet Identity (InternetIdentityProvider). The provider loads an existing session on mount, supports login/logout, and exposes status flags (initializing/logging-in/success/error) to gate the app UI.",
+      "description": "Provides login/logout and persisted delegation identity using @dfinity/auth-client via InternetIdentityProvider/useInternetIdentity, exposing detailed login status flags (initializing/logging-in/success/error).",
       "reqIds": [],
       "version": 1
     },
     {
       "id": "IF-2",
-      "title": "Canister actor creation and access-control initialization",
+      "title": "Identity-aware backend actor creation and query invalidation",
       "synonyms": [
         "useActor",
-        "actor bootstrap"
+        "authenticated actor"
       ],
-      "description": "The frontend builds a canister actor with identity-aware agent options. On actor creation it calls _initializeAccessControlWithSecret using a secret token from the URL hash (caffeineAdminToken) to register the principal and potentially assign the first admin.",
+      "description": "Creates an anonymous canister actor for guests and an authenticated actor when an Internet Identity is present. On actor changes, invalidates and refetches non-actor react-query caches to ensure identity-scoped data is refreshed.",
       "reqIds": [],
       "version": 1
     },
     {
       "id": "IF-3",
-      "title": "Role-based authorization (admin/user/guest) in backend",
+      "title": "Role-based access control (RBAC) with admin bootstrap token",
       "synonyms": [
         "AccessControl",
-        "RBAC"
+        "admin/user/guest roles"
       ],
-      "description": "Motoko access-control module assigns roles per principal (first valid secret becomes admin; otherwise user; anonymous is guest) and enforces role checks across backend endpoints (e.g., admin-only configuration and item management).",
+      "description": "Motoko RBAC assigns roles per Principal and enforces authorization checks on protected methods. Initialization uses CAFFEINE_ADMIN_TOKEN and a user-provided secret to assign the first eligible caller as admin; includes APIs to query role and assign roles (admin-only).",
       "reqIds": [],
       "version": 1
     },
     {
       "id": "IF-4",
-      "title": "Profile onboarding (first-time profile creation)",
+      "title": "App bootstrap with loading screen and profile setup gating",
       "synonyms": [
-        "Profile setup modal",
-        "createProfile"
+        "LoadingScreen",
+        "ProfileSetupModal"
       ],
-      "description": "Authenticated users without a profile are prompted with ProfileSetupModal to create a profile (username required, bio optional) via backend createProfile, then proceed into the main app.",
+      "description": "Shows a branded animated loading screen on launch, routes unauthenticated users to LoginPage, and blocks authenticated users without a profile with a mandatory profile-creation modal before allowing app access.",
       "reqIds": [],
       "version": 1
     },
     {
       "id": "IF-5",
-      "title": "User profile viewing and editing (bio, picture)",
+      "title": "User profile creation and retrieval",
       "synonyms": [
-        "Profile page",
-        "updateProfile"
+        "createProfile",
+        "getCallerUserProfile",
+        "getProfile"
       ],
-      "description": "ProfilePage displays username, bio, followers/following counts, points, badges, streak/rewards stats, and last-online status. EditProfileDialog updates the bio (and retains the existing profile picture) via backend updateProfile.",
+      "description": "Backend supports creating a profile (username + bio) and retrieving profiles publicly (getProfile) and for the authenticated caller (getCallerUserProfile). Frontend uses react-query hooks to fetch and display profile data across pages.",
       "reqIds": [],
       "version": 1
     },
     {
       "id": "IF-6",
-      "title": "User search by username",
+      "title": "User profile editing (bio + profile picture passthrough)",
       "synonyms": [
-        "Search users",
-        "searchProfiles"
+        "updateProfile",
+        "EditProfileDialog"
       ],
-      "description": "SearchPage lets users search for other users by username. Results render as UserCards showing avatar, follower/following counts, and bio. Search is backed by backend searchProfiles through a React Query hook.",
+      "description": "Allows authenticated users to update their profile bio and profile picture metadata via backend updateProfile; frontend provides an edit dialog with loading state and toasts.",
       "reqIds": [],
       "version": 1
     },
     {
       "id": "IF-7",
-      "title": "Last online tracking and presence display",
+      "title": "Public user search by username",
       "synonyms": [
-        "Presence",
-        "updateLastOnline"
+        "SearchPage",
+        "searchProfiles"
       ],
-      "description": "Backend tracks a lastOnline timestamp per profile. Frontend periodically updates last online (App and ChatWindow), and displays “Active now” / relative timestamps in ProfilePage and ChatList items.",
+      "description": "Provides a user search page that queries backend searchProfiles for username matches and renders results as UserCards with profile info and relationship actions (follow/unfollow currently stubbed).",
       "reqIds": [],
       "version": 1
     },
     {
       "id": "IF-8",
-      "title": "Points system with wallet and transaction history",
+      "title": "Presence/last-online tracking",
       "synonyms": [
-        "Points wallet",
-        "points history"
+        "updateLastOnline",
+        "getLastOnline"
       ],
-      "description": "Backend maintains a points balance on the user profile and stores points transactions. PointsPage shows current balance, derived stats (earned/spent/transaction count), and a scrollable transaction list with type-based icons and formatting.",
+      "description": "Backend stores per-user lastOnline timestamps; frontend periodically updates the caller’s last-online and displays relative status for users in ProfilePage and chat list items.",
       "reqIds": [],
       "version": 1
     },
     {
       "id": "IF-9",
-      "title": "Daily rewards claiming with streak tracking",
+      "title": "Recent statuses feed (public discovery)",
       "synonyms": [
-        "claimDailyReward",
-        "daily login streak"
+        "What's Recent",
+        "getRecentStatuses"
       ],
-      "description": "DailyRewardsPage calls backend claimDailyReward to award points once per day and updates streak/rewardsClaimed fields. UI includes an animated reward chest and streak bonus info.",
+      "description": "Backend exposes getRecentStatuses(limit) for a recency-sorted list of user status/last-online entries; FeedPage renders this as the “What’s Recent” section.",
       "reqIds": [],
       "version": 1
     },
     {
       "id": "IF-10",
-      "title": "Points store (browse items, redeem items, demo buy-points)",
+      "title": "Points wallet and transaction history",
       "synonyms": [
-        "PointsStore",
-        "purchaseStoreItem",
-        "purchasePoints"
+        "PointsPage",
+        "getPointsHistory"
       ],
-      "description": "PointsStorePage displays store items fetched from backend getStoreItems and allows redeeming items via purchaseStoreItem (spends points). It also includes a demo flow to “buy points” by calling backend purchasePoints (Stripe payment noted as coming soon).",
+      "description": "Backend tracks points and records points transactions (earn/spend/purchase). Frontend PointsPage displays current balance (from profile), computed stats, and a sorted transaction history with type-specific icons and timestamps.",
       "reqIds": [],
       "version": 1
     },
     {
       "id": "IF-11",
-      "title": "Daily Items Secret (mystery box) rewards",
+      "title": "Daily rewards (claim once per day) with streak tracking",
       "synonyms": [
-        "Daily mystery box",
-        "claimDailyItemsSecret"
+        "claimDailyReward",
+        "daily login streak"
       ],
-      "description": "DailyItemsSecretPage offers a once-per-day mystery claim with animations. Backend supports mystery items (admin CRUD) and a claim endpoint that can award points and returns the claimed MysteryItem; frontend displays the revealed item and last claimed item.",
+      "description": "Backend claimDailyReward awards points and updates streak/claim counts; frontend DailyRewardsPage provides claim UI with animations, eligibility messaging, and streak/balance stats.",
       "reqIds": [],
       "version": 1
     },
     {
       "id": "IF-12",
-      "title": "Music uploads with IC blob storage and friends discovery",
+      "title": "Points store browsing and redemption",
       "synonyms": [
-        "Music library",
-        "uploadMusic",
-        "friends music"
+        "getStoreItems",
+        "purchaseStoreItem"
       ],
-      "description": "MusicPage uploads audio using ExternalBlob, showing upload progress, and stores uploads in the user profile via backend uploadMusic. A Friends’ Music section fetches music uploads from followed users via getFriendsMusicUploads and supports playback using the blob’s direct URL.",
+      "description": "Backend exposes a public store catalog and authenticated redemption that deducts points and records a transaction. Frontend PointsStorePage lists items, disables purchase when insufficient points, and shows success/error toasts.",
       "reqIds": [],
       "version": 1
     },
     {
       "id": "IF-13",
-      "title": "Premium membership and free trial flows",
+      "title": "Demo points purchasing (Stripe integration scaffolded)",
       "synonyms": [
-        "Members-only",
-        "upgradeToPremium",
-        "activateFreeTrial"
+        "purchasePoints",
+        "buy points"
       ],
-      "description": "Backend supports premium membership expiration and a one-time free trial window. MembersOnlyPage allows activating a 3-day trial and upgrading membership for a selected duration; it gates premium content display based on premium/trial status.",
+      "description": "Backend purchasePoints increments points and records a purchase transaction (not real payment). Frontend PointsStorePage provides a demo purchase UI with quick-select amounts and balance preview; backend also includes Stripe checkout/session-status scaffolding for future real payments.",
       "reqIds": [],
       "version": 1
     },
     {
       "id": "IF-14",
-      "title": "Advanced Search Engine: voice input + math solver + AI voice responses",
+      "title": "Daily Items Secret (daily mystery box)",
       "synonyms": [
-        "Voice search",
-        "Math search",
-        "Speech synthesis"
+        "claimDailyItemsSecret",
+        "mystery reward"
       ],
-      "description": "SearchEnginePage supports browser speech recognition (voice-to-text), a client-side advanced math solver with step-by-step output, and spoken answers using speechSynthesis (respecting a persisted setting toggle). Other content search tabs are present but currently “coming soon.”",
+      "description": "Backend supports claiming a daily randomized MysteryItem reward, checking claim availability, and retrieving the last claimed item. Frontend DailyItemsSecretPage adds claim gating, an opening animation, and revealed/last-claimed reward display with item-type styling.",
       "reqIds": [],
       "version": 1
     },
     {
       "id": "IF-15",
-      "title": "Settings persistence for audio and AI voice assistant",
+      "title": "Music uploads via IC blob storage and friends’ music discovery",
       "synonyms": [
-        "Local settings",
-        "localStorage settings"
+        "uploadMusic",
+        "ExternalBlob",
+        "getFriendsMusicUploads"
       ],
-      "description": "SettingsPage stores and restores user preferences in localStorage (background music enabled, volume slider, AI voice responses enabled/disabled), with toast feedback on toggles.",
+      "description": "Users can upload music files to the canister using ExternalBlob; uploads are stored on the user profile and can be browsed by the uploader. The app also fetches and displays music uploaded by followed users (“Friends’ Music”) with playback controls using direct blob URLs.",
       "reqIds": [],
       "version": 1
     },
     {
       "id": "IF-16",
-      "title": "Responsive app shell navigation, header utilities, and theming",
+      "title": "Premium membership and free trial lifecycle",
       "synonyms": [
-        "Sidebar navigation",
-        "theme toggle",
-        "header points badge"
+        "upgradeToPremium",
+        "activateFreeTrial"
       ],
-      "description": "MainApp provides a desktop sidebar and mobile sheet menu to switch between modules. Header shows branding, a points badge linking to points pages, a light/dark theme toggle, and a user avatar menu with logout that clears React Query cache.",
+      "description": "Backend supports premium upgrades with expirations and a one-time 3-day free trial. Frontend MembersOnlyPage shows membership/trial state and provides actions to activate a trial and upgrade for selected durations (premium content listing is currently stubbed).",
       "reqIds": [],
       "version": 1
     },
     {
       "id": "IF-17",
-      "title": "Loading and onboarding UI experiences",
+      "title": "Search Engine Store (provider catalog + default selection)",
       "synonyms": [
-        "LoadingScreen",
-        "launch animation"
+        "getAvailableSearchEngines",
+        "setDefaultSearchEngine"
       ],
-      "description": "App shows a fire-themed animated LoadingScreen on startup, then gates UI based on auth/profile loading states and drives the profile setup flow for first-time users.",
+      "description": "Backend exposes a catalog of search engines and per-user default selection; frontend SearchEngineStorePage lets authenticated users set their default engine and visually highlights the current default, with guest browsing allowed.",
       "reqIds": [],
       "version": 1
     },
     {
       "id": "IF-18",
-      "title": "Content hub modules with simulated/demo implementations",
+      "title": "Per-user search history recording and viewing",
       "synonyms": [
-        "Live TV demo",
-        "Radio demo",
-        "AI song generator demo",
-        "Video upload demo",
-        "Phone protection demo",
-        "Robux simulator"
+        "recordSearchHistory",
+        "getSearchHistory"
       ],
-      "description": "The frontend includes multiple feature pages that are primarily client-side/simulated: AI Song Generator, Videos (local state + object URLs), Movies (sample listings), Radio (simulated play/stop), Live TV (channel selection), Phone Protection (simulated scan), Robux Simulator (fake code generation + clipboard), plus Help/Announcements/Roadmap/Games/Groups placeholder pages.",
+      "description": "Backend records per-user search history (bounded to the most recent entries) and exposes it for authenticated users. Frontend SearchEnginePage records history on search when authenticated, and SearchEngineStorePage displays recent history.",
       "reqIds": [],
       "version": 1
     },
     {
       "id": "IF-19",
-      "title": "Stripe checkout session support (backend)",
+      "title": "Advanced search UI (tabs, voice input, safe math evaluation, AI voice output)",
       "synonyms": [
-        "Stripe outcalls",
-        "createCheckoutSession"
+        "SearchEnginePage",
+        "SpeechRecognition",
+        "speechSynthesis",
+        "safeMathEvaluator"
       ],
-      "description": "Backend includes HTTP outcall utilities and a Stripe integration module to configure Stripe keys (admin-only), create checkout sessions, and query session status with principal extraction from client_reference_id.",
+      "description": "Frontend implements a multi-tab advanced search experience. It supports voice-to-text search input (when browser-supported), safe on-device math solving with step breakdown, and spoken responses controlled by Settings via useVoiceSettings. Non-math content search tabs are currently “coming soon”, and a web-search tab uses mock results.",
       "reqIds": [],
       "version": 1
     },
     {
       "id": "IF-20",
-      "title": "Caffeine blob-storage maintenance endpoints (backend)",
+      "title": "Groups: create/list groups and member-only group messaging",
       "synonyms": [
-        "Storage gateway authorization",
-        "blob GC/pruning"
+        "createGroup",
+        "getUserGroups",
+        "GroupConversation"
       ],
-      "description": "Backend mixin exposes endpoints for updating authorized gateway principals, listing/pruning dead blobs, checking blob liveness, and refilling the storage cashier canister with cycles (cashier-only).",
+      "description": "Backend supports creating groups, listing a user’s groups, fetching group details, and member-only group messaging with optional media attachments. Frontend GroupsPage provides group creation, selection, and a conversation view with polling, auto-scroll, emoji insertion, and attachment previews.",
       "reqIds": [],
       "version": 1
     },
     {
-      "id": "feature-update-the-advanced-search-engine-page-frontend-src-pages-searchenginepage-tsx-to-include-a-new-feature-surfaced-to-users-as-web-search-ultra-and-clearly-labeled-coming-soon-representing-a-future-capability-to-search-the-public-web-news-for-current-information",
-      "title": "Update the Advanced Search Engine page (`frontend/src/pages/SearchEnginePage.tsx`) to include a new feature surfaced to users as **“Web Search Ultra”** and clearly labeled **“Coming Soon”**, representing a future capability to search the public web/news for current information.",
+      "id": "IF-21",
+      "title": "Add people to a group from the group chat UI",
+      "synonyms": [
+        "AddGroupMembersDialog",
+        "addGroupMember"
+      ],
+      "description": "GroupConversation includes an “Add People” action that opens a dialog to search users by username and add a selected user to the currently selected group via backend addGroupMember. The dialog filters out existing members and shows confirmation messaging without navigating away from the conversation.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-22",
+      "title": "Settings persisted in localStorage (background music + AI voice assistant)",
+      "synonyms": [
+        "SettingsPage",
+        "useVoiceSettings"
+      ],
+      "description": "Frontend SettingsPage stores background music enabled/volume and AI voice assistant enabled/muted/volume preferences in localStorage and notifies same-tab/cross-tab listeners so SearchEnginePage speech behavior updates immediately.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-23",
+      "title": "Responsive authenticated app shell with header, theme toggle, and navigation",
+      "synonyms": [
+        "MainApp",
+        "Header",
+        "dark mode"
+      ],
+      "description": "MainApp provides responsive navigation (desktop sidebar + mobile sheet) across many modules. Header shows branding, a points badge shortcut, theme toggle via next-themes, and a user avatar dropdown with logout that clears react-query cache.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-24",
+      "title": "Static/simulated content modules (frontend-only experiences)",
+      "synonyms": [
+        "demo pages",
+        "placeholders"
+      ],
+      "description": "Includes multiple non-backend or simulated modules: AI Song Generator (simulated generation), Videos (local object-URL upload), Movies (sample listings), Radio (simulated play/stop), Live TV (simulated channels), Phone Protection (simulated scan), Robux Simulator (fake code generator), Creator Studio (placeholder dashboard), Help/What’s New/Roadmap/Games Coming Soon informational pages.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-25",
+      "title": "Blob-storage maintenance endpoints (Caffeine storage mixin)",
+      "synonyms": [
+        "_caffeineStorage*",
+        "blob GC/pruning"
+      ],
+      "description": "Backend exposes maintenance endpoints to update authorized gateway principals, query dead blobs to delete, confirm deletions (triggering GC), check blob liveness, create upload certificates, and refill a cashier canister with cycles (cashier-only).",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-26",
+      "title": "HTTP outcalls helper and Stripe checkout scaffolding",
+      "synonyms": [
+        "IC http_request",
+        "Stripe sessions"
+      ],
+      "description": "Backend includes HTTP GET/POST helpers using ic:aaaaa-aa http_request with a transform that strips headers, plus Stripe helper functions to configure keys (admin-only), create checkout sessions, and query session status.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "feature-wire-up-direct-messaging-in-the-react-frontend-by-implementing-usegetmessageswithuser-and-usesendmessage-in-frontend-src-hooks-usequeries-ts-to-call-the-new-backend-dm-apis-and-update-the-chat-ui-so-sending-a-message-immediately-adds-it-to-the-conversation-view-optimistic-update-or-immediate-refetch-and-polling-refetching-shows-new-messages-without-a-full-page-reload",
+      "title": "Wire up direct messaging in the React frontend by implementing `useGetMessagesWithUser` and `useSendMessage` in `frontend/src/hooks/useQueries.ts` to call the new backend DM APIs, and update the chat UI so sending a message immediately adds it to the conversation view (optimistic update or immediate refetch) and polling/refetching shows new messages without a full page reload.",
       "reqIds": [
-        "REQ-9"
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-chats-page-sidebar-data-source-to-use-the-backend-inbox-chat-list-for-direct-messages-most-recent-dm-partners-instead-of-relying-only-on-followers-following-lists-while-keeping-the-existing-search-filter-ui-working",
+      "title": "Update the Chats page sidebar data source to use the backend ‘inbox’/chat list for direct messages (most recent DM partners) instead of relying only on followers/following lists, while keeping the existing search filter UI working.",
+      "reqIds": [
+        "REQ-4"
       ],
       "version": 1
     }
@@ -244,13 +315,13 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Implement full Groups feature (create/join/manage groups; groups are “out now” so users can start creating)",
+      "summary": "Add instant messaging (real-time direct messages / chat delivery)",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Implement backend Groups domain model and persistent in-canister state for groups, including: group metadata (name, description, visibility), owner/creator principal, member list, creation/update timestamps, and an ID scheme that guarantees uniqueness.",
+      "summary": "Implement backend-supported 1:1 direct messaging so authenticated users can send a message to another user and retrieve the full conversation history with that user. Add Motoko canister methods for (a) sending a direct message and (b) querying direct messages between the caller and a specified other user, returning messages in chronological order and enforcing that only the two participants can access the conversation.",
       "reqIds": [
         "REQ-1"
       ],
@@ -258,168 +329,44 @@
     },
     {
       "id": "AR-3",
-      "summary": "Add backend canister methods required for an MVP Groups launch so users can start creating: create a group, list groups, fetch a group by ID, join a group, leave a group, and update/delete a group (restricted to the group owner). Enforce authentication/authorization using the existing access-control permission checks (authenticated users only).",
+      "summary": "Add a backend API to support an ‘inbox’/chat list for direct messages: provide a method that returns the list of unique conversation partners for the caller (Principals) ordered by most recent message activity, so the frontend Chats page can show real DM threads even if follow/unfollow is not implemented.",
       "reqIds": [
         "REQ-2"
       ],
       "status": "pending"
-    },
-    {
-      "id": "AR-4",
-      "summary": "Extend the frontend React Query layer (`frontend/src/hooks/useQueries.ts`) with group query/mutation hooks that call the new backend group canister methods (create, list, get by ID, join, leave, update, delete), with appropriate cache keys and invalidations so the Groups UI stays in sync after mutations.",
-      "reqIds": [
-        "REQ-3"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-5",
-      "summary": "Replace the placeholder UI in `frontend/src/pages/GroupsPage.tsx` with a working Groups experience that lets authenticated users: view a list of groups, create a new group via a form (dialog or inline), and join/leave groups from the list. Ensure all user-facing text is in English and provide clear loading/empty/error states.",
-      "reqIds": [
-        "REQ-4"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-6",
-      "summary": "Add a branded, app-specific login page/screen (while still using Internet Identity for authentication) instead of relying only on the current authenticated app shell flow.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-7",
-      "summary": "Implement friend connection requests (send/accept/decline) and gate 1:1 chat so users can only chat after a connection request is accepted; add a dedicated “Chat with Friends” page reflecting this state.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-8",
-      "summary": "Restrict editing of the latest announcements so regular users cannot edit; only admins can modify announcements content.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-9",
-      "summary": "Enhance Math Search voice assistant behavior: after speaking an answer, automatically speak a follow-up phrase (default: “Would you like to ask another question?”) and ensure voice output stops safely on errors/bugs with a user-visible error message.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-10",
-      "summary": "Add spelling correction to Search (mark as “Coming soon” in UI until implemented) alongside voice search and improved math solver experience.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-11",
-      "summary": "Implement a persistent Groups domain model in `backend/main.mo` including: unique group ID, name, description, visibility (public/private), owner/creator Principal, member list, and created/updated timestamps.",
-      "reqIds": [
-        "REQ-5"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-12",
-      "summary": "Add backend canister methods for an MVP Groups launch in `backend/main.mo`: createGroup, listGroups, getGroupById, joinGroup, leaveGroup, updateGroup, deleteGroup, with authentication required for all methods and owner-only authorization for update/delete.",
-      "reqIds": [
-        "REQ-6"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-13",
-      "summary": "Extend `frontend/src/hooks/useQueries.ts` with React Query hooks for Groups that call the new backend methods (create, list, get-by-id, join, leave, update, delete) and ensure correct cache keys and invalidations so the Groups UI stays in sync after mutations.",
-      "reqIds": [
-        "REQ-7"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-14",
-      "summary": "Replace the placeholder UI in `frontend/src/pages/GroupsPage.tsx` with a functional MVP Groups experience for authenticated users: view a list of groups, create a group via a form (dialog or inline), and join/leave groups from the list; include clear English loading/empty/error states.",
-      "reqIds": [
-        "REQ-8"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-15",
-      "summary": "Add a “Web Search Ultra” feature (marked as Coming Soon) that searches the public web/news so users can query for current information beyond in-app content.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-16",
-      "summary": "Rename/rebrand app to “JAMESPaudio Social App” (including updated logo/branding across the UI).",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-17",
-      "summary": "Implement real content search across in-app domains (apps/music/videos/movies/etc.) to replace stubbed empty results and make “all search features available.”",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-18",
-      "summary": "Add a global “Unavailable / Something went wrong” page/route and use it for missing accounts and unexpected app errors (safe fallback UX).",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-19",
-      "summary": "Enhance Daily Rewards to grant a randomized points amount per day (within defined bounds) and persist/track claims as part of the rewards system.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-20",
-      "summary": "Add Live TV module/page (beyond the current simulated/demo experience) with a concrete set of channels/streams and working playback.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-21",
-      "summary": "Create/expand Help pages into a real FAQ/guides experience, including a dedicated section titled “Need Help with Math?” tied to Math Search usage.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-22",
-      "summary": "Add a fire-themed loading/intro screen with heavy beats audio, plus user settings to disable or reduce volume (if not already covered by existing settings).",
-      "reqIds": [],
-      "status": "pending"
     }
   ],
-  "architecturalNotes": [
-    "Frontend is React + TypeScript using shadcn/ui components, TailwindCSS (OKLCH-based theme variables), lucide-react icons, and Sonner for toast notifications.",
-    "Data fetching/mutations use @tanstack/react-query with a custom useActor hook to construct an authenticated canister actor (or anonymous actor) and invalidate/refetch queries when identity changes.",
-    "Authentication uses Internet Identity via @dfinity/auth-client wrapped in a React context provider (InternetIdentityProvider) with persisted sessions and explicit login/logout controls.",
-    "The app shell (MainApp) uses local state for page selection with a responsive sidebar + mobile Sheet menu; some pages also use TanStack Router navigation helpers, resulting in mixed navigation patterns.",
-    "Backend is a Motoko canister (backend/main.mo) using mo:core Map/List-based in-memory state, with mixins for authorization (role assignment) and blob-storage maintenance operations.",
-    "Authorization is role-based (admin/user/guest). First initializer with a correct secret becomes admin; roles are stored in an AccessControl map and enforced by backend methods.",
-    "Backend supports IC HTTP outcalls with response transforms, and includes a Stripe module to create checkout sessions and query session status (configuration gated by admin).",
-    "Blob storage integration includes authorization of gateway principals and garbage-collection/pruning hooks using low-level Prim APIs.",
-    "Several “platform modules” in the UI are intentionally simulated client-side (AI song generation, video uploads, live TV/radio playback simulation, phone protection scan) without backend persistence.",
-    "SearchEngine math solving now uses a dedicated safeMathEvaluator utility instead of relying on eval() directly.",
-    "Repository now includes a reusable build-template (React + shadcn/ui + ICP canister scaffolding) with scripts for image pruning/resizing and standardized frontend/backend canister YAML/config."
+  "architectural_notes": [
+    "Frontend uses React + TypeScript with TailwindCSS and shadcn/ui components; lucide-react supplies icons and sonner provides toast notifications.",
+    "Data fetching/mutations are centralized in @tanstack/react-query hooks (frontend/src/hooks/useQueries.ts), with cache invalidation on mutation success and on actor/identity changes.",
+    "Backend communication is mediated by an identity-aware canister actor created by useActor; an anonymous actor is used for guests, and an authenticated actor is created when an Internet Identity is present.",
+    "Backend authorization is a Motoko RBAC layer (authorization/access-control.mo) composed into the canister via a mixin (authorization/MixinAuthorization.mo). First-time initialization can assign the first valid caller as admin based on an env token and a user-provided secret.",
+    "Main in-app navigation inside MainApp is implemented via local component state (page switching) with a responsive desktop sidebar and a mobile Sheet menu; some pages also use TanStack Router navigation APIs for path-based navigation (mixed navigation model).",
+    "Backend composes additional capabilities via mixins (blob-storage maintenance endpoints) and includes HTTP outcall helpers and Stripe checkout/session-status scaffolding.",
+    "Voice features (SearchEnginePage) rely on browser SpeechRecognition (voice-to-text) and speechSynthesis (text-to-speech). AI voice settings are persisted in localStorage and synchronized via a custom hook (useVoiceSettings).",
+    "Math solving in the advanced search UI uses a custom safe tokenizer + recursive-descent parser (safeMathEvaluator) rather than eval()."
   ],
-  "knownIssues": [
-    "Frontend hook useFollowUser/useUnfollowUser throws “not yet implemented”; follow/unfollow buttons exist but cannot succeed.",
-    "Messaging is not implemented: useGetMessagesWithUser returns [] and useSendMessage throws “not yet implemented”, though Chat UI polls and renders messages.",
-    "Home feed and friend suggestions are stubbed: useGetHomeFeed/useGetFriendSuggestions return empty arrays; FeedPage UI exists but cannot show real feed/suggestions.",
-    "Published apps are not implemented server-side: useGetAllPublishedApps returns [] and usePublishApp throws; PublishedAppsPage enforces 70-point requirement in UI but cannot actually publish.",
-    "Live streams backend integration is stubbed in hooks: useGetLiveStreams returns [], create/stop mutations throw; LiveStreamsPage UI exists but cannot persist streams.",
-    "SearchEngine “content search” (apps/music/videos/movies) is stubbed: useSearchContent always returns empty results; only the client-side math solver produces results.",
-    "EditProfileDialog tracks a local “status” field but never sends it; backend updateProfile only updates bio/profilePicture, so status editing is effectively non-functional.",
-    "MainApp imports TanStack Router constructs but does not use them for page rendering; navigation is mostly local state while some pages use useNavigate, which can lead to inconsistent routing behavior.",
-    "There are two different frontend index.css files shown with overlapping CSS variable definitions, which may indicate duplication/conflicts depending on build setup."
+  "known_issues": [
+    "Follow/unfollow is not implemented: useFollowUser/useUnfollowUser throw \"not yet implemented\", so follow buttons in Search/User cards and friend suggestions cannot succeed.",
+    "1:1 messaging is not implemented: useGetMessagesWithUser returns [] and useSendMessage throws \"Messaging functionality not yet implemented\"; Chats UI is effectively non-functional beyond layout.",
+    "Home feed and friend suggestions are stubbed: useGetHomeFeed/useGetFriendSuggestions return empty arrays; only the “What’s Recent” section works (getRecentStatuses).",
+    "Content search is stubbed: useSearchContent returns empty results for non-math tabs; only math solving and the mock “Web Search Ultra” tab produce output.",
+    "Web Search Ultra is mock-only (useWebSearchUltra returns placeholder results) and does not call a real external search API.",
+    "Published apps and live streams are not implemented end-to-end: list queries return [] and publish/create/stop mutations throw \"not yet implemented\".",
+    "Premium content listing is stubbed: useGetPremiumContent returns [] so MembersOnlyPage shows no real premium content items.",
+    "Backend bug: updatePointsBalance overwrites points for positive amounts (sets points to amount) instead of adding; this can corrupt balances when awarding points-based rewards (e.g., Daily Items Secret).",
+    "Backend bug: Daily Items Secret cooldown check can be incorrect because canClaimDailySecret reads dailyItemsRewardHistory by key userId.toText(), but claims are stored in the map under claimId (caller_time).",
+    "Backend env var appears misspelled: blob storage expects CAFFFEINE_STORAGE_CASHIER_PRINCIPAL (triple “F”); deployments using a different spelling will trap.",
+    "Auth bootstrap is brittle: _initializeAccessControlWithSecret traps if CAFFEINE_ADMIN_TOKEN is not set, potentially breaking authenticated actor creation in environments missing that variable.",
+    "Mixed navigation model: MainApp uses internal state, while several pages use TanStack Router navigation (e.g., /points, /search-engine-store). Without consistent routing integration, some navigation calls may not behave as expected.",
+    "ScrollArea refs are used for imperative scrolling (ChatWindow/GroupConversation); depending on ScrollArea ref-forwarding behavior, auto-scroll may be unreliable.",
+    "Branding inconsistencies remain (e.g., frontend/index.html title and ProfileSetupModal still reference “Chat With Us”).",
+    "Duplicate/competing Tailwind token files exist (frontend/index.css vs frontend/src/index.css), which can cause theme/token confusion depending on build wiring.",
+    "Backend state is kept in in-memory Maps/Lists without stable persistence shown; data may be lost on canister upgrades/redeploys."
   ],
   "isFixRequest": false,
   "gameProjectType": "none",
-  "projectName": "JAMESPaudio Social App",
+  "projectName": "JAMESPaudio",
   "clarification_mode": "instant",
-  "clarification_rounds": 0,
-  "requiresBackendChanges": false,
-  "requiresFrontendChanges": true
+  "clarification_rounds": 0
 }

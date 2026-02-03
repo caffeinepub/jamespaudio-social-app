@@ -31,6 +31,12 @@ export interface TransformationOutput {
     body: Uint8Array;
     headers: Array<http_header>;
 }
+export interface SearchEngine {
+    id: string;
+    name: string;
+    description: string;
+    apiUrl: string;
+}
 export interface MusicUpload {
     id: string;
     title: string;
@@ -40,12 +46,13 @@ export interface MusicUpload {
     uploadTime: Timestamp;
     uploadedBy: UserId;
 }
-export interface PointsStoreItem {
+export interface GroupMessage {
     id: string;
-    name: string;
-    createdAt: Timestamp;
-    description: string;
-    price: bigint;
+    content: string;
+    mediaAttachment?: MediaAttachment;
+    sender: UserId;
+    groupId: GroupId;
+    timestamp: Timestamp;
 }
 export interface DailyMysteryItemData {
     id: string;
@@ -53,6 +60,55 @@ export interface DailyMysteryItemData {
     lastDailyItemClaim?: Timestamp;
     newDailyItemResult?: MysteryItem;
     dailyItemBoxOpened: boolean;
+}
+export interface Group {
+    id: GroupId;
+    members: Array<UserId>;
+    name: string;
+    createdAt: Timestamp;
+    createdBy: UserId;
+    description: string;
+}
+export type GroupId = string;
+export interface Badge {
+    name: string;
+    typeId: bigint;
+    description: string;
+    earnedAt: Timestamp;
+}
+export interface TransformationInput {
+    context: Uint8Array;
+    response: http_request_result;
+}
+export type StripeSessionStatus = {
+    __kind__: "completed";
+    completed: {
+        userPrincipal?: string;
+        response: string;
+    };
+} | {
+    __kind__: "failed";
+    failed: {
+        error: string;
+    };
+};
+export interface StripeConfiguration {
+    allowedCountries: Array<string>;
+    secretKey: string;
+}
+export interface DirectMessage {
+    id: MessageId;
+    content: string;
+    sender: UserId;
+    timestamp: Timestamp;
+    receiver: UserId;
+}
+export interface PointsStoreItem {
+    id: string;
+    name: string;
+    createdAt: Timestamp;
+    description: string;
+    price: bigint;
 }
 export interface PointsTransaction {
     id: string;
@@ -72,11 +128,10 @@ export interface http_request_result {
     headers: Array<http_header>;
 }
 export type UserId = Principal;
-export interface Badge {
-    name: string;
-    typeId: bigint;
-    description: string;
-    earnedAt: Timestamp;
+export interface MediaAttachment {
+    url: string;
+    contentType: string;
+    mediaType: Variant_audio_video_image;
 }
 export interface ShoppingItem {
     productName: string;
@@ -85,34 +140,20 @@ export interface ShoppingItem {
     priceInCents: bigint;
     productDescription: string;
 }
-export type Points = bigint;
-export interface TransformationInput {
-    context: Uint8Array;
-    response: http_request_result;
-}
+export type MessageId = bigint;
 export interface FeedItem {
     status: Status;
     username: string;
     userId: UserId;
     timestamp: Timestamp;
 }
-export type StripeSessionStatus = {
-    __kind__: "completed";
-    completed: {
-        userPrincipal?: string;
-        response: string;
-    };
-} | {
-    __kind__: "failed";
-    failed: {
-        error: string;
-    };
-};
-export interface StripeConfiguration {
-    allowedCountries: Array<string>;
-    secretKey: string;
-}
 export type Status = string;
+export interface SearchHistoryEntry {
+    userId: UserId;
+    searchTerm: string;
+    searchType: string;
+    timestamp: Timestamp;
+}
 export interface MysteryItem {
     id: string;
     visualUrl?: string;
@@ -144,7 +185,7 @@ export interface UserProfile {
         contentType: string;
     };
     isPremiumMember: boolean;
-    points: Points;
+    points: bigint;
     musicUploads: Array<MusicUpload>;
 }
 export enum MysteryItemType {
@@ -163,8 +204,14 @@ export enum UserRole {
     user = "user",
     guest = "guest"
 }
+export enum Variant_audio_video_image {
+    audio = "audio",
+    video = "video",
+    image = "image"
+}
 export interface backendInterface {
     activateFreeTrial(): Promise<void>;
+    addGroupMember(groupId: GroupId, userId: UserId): Promise<void>;
     addMysteryItem(mysteryItem: MysteryItem): Promise<void>;
     addStoreItem(item: PointsStoreItem): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
@@ -172,14 +219,21 @@ export interface backendInterface {
     claimDailyItemsSecret(): Promise<MysteryItem | null>;
     claimDailyReward(): Promise<string>;
     createCheckoutSession(items: Array<ShoppingItem>, successUrl: string, cancelUrl: string): Promise<string>;
+    createGroup(name: string, description: string): Promise<GroupId>;
     createProfile(username: string, bio: string): Promise<void>;
     deleteMysteryItem(id: string): Promise<void>;
     deleteStoreItem(id: string): Promise<void>;
     getAllMysteryItems(): Promise<Array<MysteryItem>>;
     getAllProfiles(): Promise<Array<UserProfile>>;
+    getAvailableSearchEngines(): Promise<Array<SearchEngine>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
+    getDefaultSearchEngine(): Promise<string>;
+    getDirectMessagePartners(): Promise<Array<Principal>>;
+    getDirectMessages(otherUser: Principal): Promise<Array<DirectMessage>>;
     getFriendsMusicUploads(userId: UserId): Promise<Array<MusicUpload>>;
+    getGroup(groupId: GroupId): Promise<Group | null>;
+    getGroupMessages(groupId: GroupId): Promise<Array<GroupMessage>>;
     getLastClaimedMysteryItem(userId: UserId): Promise<MysteryItem | null>;
     getLastOnline(userId: UserId): Promise<Timestamp>;
     getLastOnlineForMultipleUsers(userIds: Array<UserId>): Promise<Array<[UserId, Timestamp]>>;
@@ -187,8 +241,10 @@ export interface backendInterface {
     getPointsHistory(): Promise<Array<PointsTransaction>>;
     getProfile(userId: UserId): Promise<UserProfile>;
     getRecentStatuses(limit: bigint): Promise<Array<FeedItem>>;
+    getSearchHistory(): Promise<Array<SearchHistoryEntry>>;
     getStoreItems(): Promise<Array<PointsStoreItem>>;
     getStripeSessionStatus(sessionId: string): Promise<StripeSessionStatus>;
+    getUserGroups(): Promise<Array<Group>>;
     getUserMysteryItems(userId: UserId): Promise<Array<DailyMysteryItemData>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
@@ -196,8 +252,12 @@ export interface backendInterface {
     isStripeConfigured(): Promise<boolean>;
     purchasePoints(pointsToBuy: bigint): Promise<string>;
     purchaseStoreItem(storeItemId: string): Promise<string>;
+    recordSearchHistory(searchTerm: string, searchEngineId: string): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     searchProfiles(searchTerm: string): Promise<Array<SearchResult>>;
+    sendDirectMessage(receiver: Principal, content: string): Promise<void>;
+    sendGroupMessage(groupId: GroupId, content: string, mediaAttachment: MediaAttachment | null): Promise<void>;
+    setDefaultSearchEngine(searchEngineId: string): Promise<void>;
     setStripeConfiguration(config: StripeConfiguration): Promise<void>;
     spendPoints(amount: bigint): Promise<string>;
     transform(input: TransformationInput): Promise<TransformationOutput>;

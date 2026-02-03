@@ -1,8 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
 import { Principal } from '@dfinity/principal';
-import type { UserProfile, SearchResult, FeedItem as BackendFeedItem, Timestamp, PointsTransaction, PointsStoreItem, MusicUpload, MysteryItem } from '../backend';
-import type { Message, PublishedApp, PremiumContent, LiveStream, UpcomingFeature, UpcomingGame } from '../types/temporary';
+import type { UserProfile, SearchResult, FeedItem as BackendFeedItem, Timestamp, PointsTransaction, PointsStoreItem, MusicUpload, MysteryItem, SearchEngine, SearchHistoryEntry, Group, GroupMessage, MediaAttachment, GroupId, DirectMessage } from '../backend';
+import type { PublishedApp, PremiumContent, LiveStream, UpcomingFeature, UpcomingGame } from '../types/temporary';
 import { useInternetIdentity } from './useInternetIdentity';
 import { ExternalBlob } from '../backend';
 
@@ -167,6 +167,262 @@ export function useSearchContent(searchTerm: string, searchType: string) {
   });
 }
 
+// Search Engine Store Queries
+export function useGetAvailableSearchEngines() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<SearchEngine[]>({
+    queryKey: ['availableSearchEngines'],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getAvailableSearchEngines();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useGetDefaultSearchEngine() {
+  const { actor, isFetching } = useActor();
+  const { identity } = useInternetIdentity();
+
+  return useQuery<string>({
+    queryKey: ['defaultSearchEngine'],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      try {
+        return await actor.getDefaultSearchEngine();
+      } catch (error: any) {
+        if (error.message?.includes('Unauthorized')) {
+          return 'ultra_search'; // Default fallback
+        }
+        throw error;
+      }
+    },
+    enabled: !!actor && !isFetching && !!identity,
+  });
+}
+
+export function useSetDefaultSearchEngine() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (searchEngineId: string) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.setDefaultSearchEngine(searchEngineId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['defaultSearchEngine'] });
+    },
+  });
+}
+
+export function useRecordSearchHistory() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ searchTerm, searchEngineId }: { searchTerm: string; searchEngineId: string }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.recordSearchHistory(searchTerm, searchEngineId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['searchHistory'] });
+    },
+  });
+}
+
+export function useGetSearchHistory() {
+  const { actor, isFetching } = useActor();
+  const { identity } = useInternetIdentity();
+
+  return useQuery<SearchHistoryEntry[]>({
+    queryKey: ['searchHistory'],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      try {
+        return await actor.getSearchHistory();
+      } catch (error: any) {
+        if (error.message?.includes('Unauthorized')) {
+          return [];
+        }
+        throw error;
+      }
+    },
+    enabled: !!actor && !isFetching && !!identity,
+  });
+}
+
+// Group Queries
+export function useGetUserGroups() {
+  const { actor, isFetching } = useActor();
+  const { identity } = useInternetIdentity();
+
+  return useQuery<Group[]>({
+    queryKey: ['userGroups'],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      try {
+        return await actor.getUserGroups();
+      } catch (error: any) {
+        if (error.message?.includes('Unauthorized')) {
+          return [];
+        }
+        throw error;
+      }
+    },
+    enabled: !!actor && !isFetching && !!identity,
+  });
+}
+
+export function useGetGroup(groupId: GroupId) {
+  const { actor, isFetching } = useActor();
+  const { identity } = useInternetIdentity();
+
+  return useQuery<Group | null>({
+    queryKey: ['group', groupId],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      try {
+        return await actor.getGroup(groupId);
+      } catch (error: any) {
+        if (error.message?.includes('Unauthorized') || error.message?.includes('members')) {
+          return null;
+        }
+        throw error;
+      }
+    },
+    enabled: !!actor && !isFetching && !!identity && !!groupId,
+  });
+}
+
+export function useCreateGroup() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ name, description }: { name: string; description: string }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.createGroup(name, description);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['userGroups'] });
+    },
+  });
+}
+
+export function useAddGroupMember() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ groupId, userId }: { groupId: GroupId; userId: Principal }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.addGroupMember(groupId, userId);
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['userGroups'] });
+      queryClient.invalidateQueries({ queryKey: ['group', variables.groupId] });
+    },
+  });
+}
+
+export function useGetGroupMessages(groupId: GroupId) {
+  const { actor, isFetching } = useActor();
+  const { identity } = useInternetIdentity();
+
+  return useQuery<GroupMessage[]>({
+    queryKey: ['groupMessages', groupId],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      try {
+        return await actor.getGroupMessages(groupId);
+      } catch (error: any) {
+        if (error.message?.includes('Unauthorized') || error.message?.includes('members')) {
+          return [];
+        }
+        throw error;
+      }
+    },
+    enabled: !!actor && !isFetching && !!identity && !!groupId,
+  });
+}
+
+export function useSendGroupMessage() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ groupId, content, mediaAttachment }: { groupId: GroupId; content: string; mediaAttachment: MediaAttachment | null }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.sendGroupMessage(groupId, content, mediaAttachment);
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['groupMessages', variables.groupId] });
+    },
+  });
+}
+
+// Direct Messaging Queries
+export function useGetDirectMessagePartners() {
+  const { actor, isFetching } = useActor();
+  const { identity } = useInternetIdentity();
+
+  return useQuery<Principal[]>({
+    queryKey: ['directMessagePartners'],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      try {
+        return await actor.getDirectMessagePartners();
+      } catch (error: any) {
+        if (error.message?.includes('Unauthorized')) {
+          return [];
+        }
+        throw error;
+      }
+    },
+    enabled: !!actor && !isFetching && !!identity,
+    refetchInterval: 10000,
+  });
+}
+
+export function useGetMessagesWithUser(userId: Principal) {
+  const { actor, isFetching } = useActor();
+  const { identity } = useInternetIdentity();
+
+  return useQuery<DirectMessage[]>({
+    queryKey: ['directMessages', userId.toString()],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      try {
+        return await actor.getDirectMessages(userId);
+      } catch (error: any) {
+        if (error.message?.includes('Unauthorized')) {
+          return [];
+        }
+        throw error;
+      }
+    },
+    enabled: !!actor && !isFetching && !!identity,
+  });
+}
+
+export function useSendMessage() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ receiver, content }: { receiver: Principal; content: string }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.sendDirectMessage(receiver, content);
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['directMessages', variables.receiver.toString()] });
+      queryClient.invalidateQueries({ queryKey: ['directMessagePartners'] });
+    },
+  });
+}
+
 // Follow/Unfollow Mutations
 export function useFollowUser() {
   const { actor } = useActor();
@@ -226,35 +482,6 @@ export function useGetFriendSuggestions() {
       return [];
     },
     enabled: !!actor && !isFetching,
-  });
-}
-
-// Messaging Queries
-export function useGetMessagesWithUser(userId: Principal) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<Message[]>({
-    queryKey: ['messages', userId.toString()],
-    queryFn: async () => {
-      if (!actor) throw new Error('Actor not available');
-      return [];
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-export function useSendMessage() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({ receiver, content }: { receiver: Principal; content: string }) => {
-      if (!actor) throw new Error('Actor not available');
-      throw new Error('Messaging functionality not yet implemented');
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['messages', variables.receiver.toString()] });
-    },
   });
 }
 

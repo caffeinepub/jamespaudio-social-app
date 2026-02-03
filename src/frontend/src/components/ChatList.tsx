@@ -15,8 +15,8 @@ export default function ChatList({ userIds, selectedUserId, onSelectUser }: Chat
   if (userIds.length === 0) {
     return (
       <div className="p-4 text-center text-muted-foreground">
-        <p>No chats yet</p>
-        <p className="text-sm mt-1">Follow users to start chatting</p>
+        <p>No conversations yet</p>
+        <p className="text-sm mt-1">Search for users to start chatting</p>
       </div>
     );
   }

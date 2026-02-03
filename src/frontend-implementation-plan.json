@@ -1,21 +1,53 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Add Web Search Ultra (Coming Soon) tab to Advanced Search Engine UI",
+  "title": "Direct messaging (1:1 DMs) frontend wiring: hooks + chats sidebar",
   "requirements": [
     {
-      "id": "REQ-9",
-      "summary": "Add a new “Web Search Ultra” tab marked “Coming Soon” to the Advanced Search Engine results UI, showing a non-functional placeholder and a Coming Soon toast on attempted use.",
+      "id": "REQ-3",
+      "summary": "Implement DM query/mutation hooks and update the chat window to show real 1:1 conversation history with fast send + polling-based updates.",
       "acceptanceCriteria": [
-        "When a user performs a search (i.e., `submittedSearch` is set and results UI is shown), the tab row includes a new tab for Web Search Ultra that is visibly marked as “Coming Soon”.",
-        "Selecting the Web Search Ultra tab shows a non-functional placeholder state (no backend calls) that explains in English that web/news search is coming soon.",
-        "If the user attempts to use Web Search Ultra (e.g., clicks a button in that placeholder), the UI shows a clear “Coming Soon” toast/message instead of failing silently."
+        "`useSendMessage` no longer throws 'Messaging functionality not yet implemented' and successfully sends messages via the canister.",
+        "`useGetMessagesWithUser` no longer returns an empty array stub and displays real conversation history.",
+        "After sending a message in `ChatWindow`, the message appears in the UI within 1 second without manual refresh.",
+        "Polling/refetch in `ChatWindow` results in newly received messages appearing automatically."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/SearchEnginePage.tsx",
+          "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Update the search results Tabs UI to include a new TabsTrigger for “Web Search Ultra” with a visible “Coming Soon” label/badge in the tab row, and add a corresponding TabsContent placeholder panel describing that public web/news search is coming soon and not yet available. Ensure selecting this tab does not trigger any search fetching logic by disabling the existing useSearchContent query when the active tab is Web Search Ultra (e.g., avoid enabling the query by passing an empty search term or otherwise gating it for this tab). Add a clear call-to-action button in the placeholder (e.g., “Try Web Search Ultra”) that, when clicked, shows a “Coming Soon” toast/message using the existing toast system instead of performing any real action. Use the existing shadcn-ui Tabs/Badge components and the existing toast utility for messaging; verify the component's usage instructions before implementing."
+          "description": "Implement `useGetMessagesWithUser` to fetch real DM history via the backend DM capability (use `actor.getDirectMessages(otherUser)`), returning chronological messages. Implement `useSendMessage` to send via the backend DM capability (use `actor.sendDirectMessage(receiver, content)`), with an optimistic update (or immediate refetch) so the newly sent message appears in the conversation UI within 1 second. Ensure hooks are only enabled when the user is authenticated (authorization component guidance); handle unauthorized traps gracefully. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/ChatWindow.tsx",
+          "operation": "modify",
+          "description": "Update `ChatWindow` to consume the real DM message type returned by `useGetMessagesWithUser` and ensure the post-send behavior results in the message appearing in the UI within 1 second (rely on optimistic cache update and/or immediate refetch after mutation success). Keep the existing polling/refetch pattern (no WebSockets)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Update the Chats sidebar to use the backend DM inbox/chat-partners list while preserving the current search filtering and conversation selection behavior.",
+      "acceptanceCriteria": [
+        "Chats sidebar shows users you have direct-messaged with, even if followers/following are empty.",
+        "Search filtering still narrows the displayed chat list based on the existing search input.",
+        "Selecting a user from the chat list opens the correct 1:1 conversation in `ChatWindow`."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Add a react-query hook (e.g., `useGetDirectMessagePartners`) that loads the caller’s DM chat list via the backend inbox capability (use `actor.getDirectMessagePartners()`), with authentication-aware `enabled` gating per authorization component guidance and basic unauthorized-error handling. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/ChatsPage.tsx",
+          "operation": "modify",
+          "description": "Replace the sidebar data source derived from followers/following with the DM partners list from the new hook. Keep the existing search input and filtering behavior, and continue wiring selection to `ChatList` and `ChatWindow` so clicking a partner opens the correct 1:1 conversation."
+        },
+        {
+          "path": "frontend/src/components/ChatList.tsx",
+          "operation": "modify",
+          "description": "Update the empty-state copy to reflect DM-based chat threads (not follower-based), and ensure it still renders partner principals provided by the updated Chats page."
         }
       ]
     }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Home, MessageCircle, Search, User, Music, Sparkles, AppWindow, Video, Film, Radio, Shield, Newspaper, Coins, Palette, Tv, Gift, Users, Settings, Crown, Wifi, MapPin, Gamepad2, SearchCode, Wallet, HelpCircle, Package } from 'lucide-react';
+import { Home, MessageCircle, Search, User, Music, Sparkles, AppWindow, Video, Film, Radio, Shield, Newspaper, Coins, Palette, Tv, Gift, Users, Settings, Crown, Wifi, MapPin, Gamepad2, SearchCode, Wallet, HelpCircle, Package, Store } from 'lucide-react';
 import Header from '../components/Header';
 import FeedPage from './FeedPage';
 import ChatsPage from './ChatsPage';
@@ -25,6 +25,7 @@ import LiveStreamsPage from './LiveStreamsPage';
 import WhatsNextPage from './WhatsNextPage';
 import GamesComingSoonPage from './GamesComingSoonPage';
 import SearchEnginePage from './SearchEnginePage';
+import SearchEngineStorePage from './SearchEngineStorePage';
 import PageUnavailablePage from './PageUnavailablePage';
 import PointsPage from './PointsPage';
 import PointsStorePage from './PointsStorePage';
@@ -33,9 +34,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu } from 'lucide-react';
-import { RouterProvider, createRouter, createRootRoute, createRoute, Outlet } from '@tanstack/react-router';
 
-type PageType = 'feed' | 'chats' | 'search' | 'profile' | 'music' | 'ai-song' | 'apps' | 'creator' | 'videos' | 'movies' | 'livetv' | 'radio' | 'groups' | 'protection' | 'news' | 'robux' | 'rewards' | 'daily-items-secret' | 'settings' | 'members-only' | 'live-streams' | 'whats-next' | 'games-coming' | 'search-engine' | 'page-unavailable' | 'points' | 'points-store' | 'help';
+type PageType = 'feed' | 'chats' | 'search' | 'profile' | 'music' | 'ai-song' | 'apps' | 'creator' | 'videos' | 'movies' | 'livetv' | 'radio' | 'groups' | 'protection' | 'news' | 'robux' | 'rewards' | 'daily-items-secret' | 'settings' | 'members-only' | 'live-streams' | 'whats-next' | 'games-coming' | 'search-engine' | 'search-engine-store' | 'page-unavailable' | 'points' | 'points-store' | 'help';
 
 export default function MainApp() {
   const [activePage, setActivePage] = useState<PageType>('feed');
@@ -61,6 +61,7 @@ export default function MainApp() {
     { id: 'rewards' as PageType, label: 'Daily Rewards', icon: Gift },
     { id: 'daily-items-secret' as PageType, label: 'Daily Items Secret', icon: Package },
     { id: 'search-engine' as PageType, label: 'Search Engine', icon: SearchCode },
+    { id: 'search-engine-store' as PageType, label: 'Search Engine Store', icon: Store },
     { id: 'whats-next' as PageType, label: "What's Next", icon: MapPin },
     { id: 'games-coming' as PageType, label: 'Games Coming Soon', icon: Gamepad2 },
     { id: 'protection' as PageType, label: 'Phone Protection', icon: Shield },
@@ -92,6 +93,7 @@ export default function MainApp() {
       case 'rewards': return <DailyRewardsPage />;
       case 'daily-items-secret': return <DailyItemsSecretPage />;
       case 'search-engine': return <SearchEnginePage />;
+      case 'search-engine-store': return <SearchEngineStorePage />;
       case 'whats-next': return <WhatsNextPage />;
       case 'games-coming': return <GamesComingSoonPage />;
       case 'protection': return <PhoneProtectionPage />;

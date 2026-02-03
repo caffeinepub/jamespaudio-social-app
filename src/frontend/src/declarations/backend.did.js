@@ -19,6 +19,8 @@ export const _CaffeineStorageRefillResult = IDL.Record({
   'success' : IDL.Opt(IDL.Bool),
   'topped_up_amount' : IDL.Opt(IDL.Nat),
 });
+export const GroupId = IDL.Text;
+export const UserId = IDL.Principal;
 export const MysteryItemType = IDL.Variant({
   'message' : IDL.Null,
   'badge' : IDL.Null,
@@ -61,8 +63,6 @@ export const Badge = IDL.Record({
   'description' : IDL.Text,
   'earnedAt' : Timestamp,
 });
-export const UserId = IDL.Principal;
-export const Points = IDL.Nat;
 export const ExternalBlob = IDL.Vec(IDL.Nat8);
 export const MusicUpload = IDL.Record({
   'id' : IDL.Text,
@@ -92,8 +92,47 @@ export const UserProfile = IDL.Record({
   'following' : IDL.Vec(UserId),
   'profilePicture' : IDL.Record({ 'url' : IDL.Text, 'contentType' : IDL.Text }),
   'isPremiumMember' : IDL.Bool,
-  'points' : Points,
+  'points' : IDL.Nat,
   'musicUploads' : IDL.Vec(MusicUpload),
+});
+export const SearchEngine = IDL.Record({
+  'id' : IDL.Text,
+  'name' : IDL.Text,
+  'description' : IDL.Text,
+  'apiUrl' : IDL.Text,
+});
+export const MessageId = IDL.Nat;
+export const DirectMessage = IDL.Record({
+  'id' : MessageId,
+  'content' : IDL.Text,
+  'sender' : UserId,
+  'timestamp' : Timestamp,
+  'receiver' : UserId,
+});
+export const Group = IDL.Record({
+  'id' : GroupId,
+  'members' : IDL.Vec(UserId),
+  'name' : IDL.Text,
+  'createdAt' : Timestamp,
+  'createdBy' : UserId,
+  'description' : IDL.Text,
+});
+export const MediaAttachment = IDL.Record({
+  'url' : IDL.Text,
+  'contentType' : IDL.Text,
+  'mediaType' : IDL.Variant({
+    'audio' : IDL.Null,
+    'video' : IDL.Null,
+    'image' : IDL.Null,
+  }),
+});
+export const GroupMessage = IDL.Record({
+  'id' : IDL.Text,
+  'content' : IDL.Text,
+  'mediaAttachment' : IDL.Opt(MediaAttachment),
+  'sender' : UserId,
+  'groupId' : GroupId,
+  'timestamp' : Timestamp,
 });
 export const TransactionType = IDL.Variant({
   'earn' : IDL.Null,
@@ -112,6 +151,12 @@ export const FeedItem = IDL.Record({
   'status' : Status,
   'username' : IDL.Text,
   'userId' : UserId,
+  'timestamp' : Timestamp,
+});
+export const SearchHistoryEntry = IDL.Record({
+  'userId' : UserId,
+  'searchTerm' : IDL.Text,
+  'searchType' : IDL.Text,
   'timestamp' : Timestamp,
 });
 export const StripeSessionStatus = IDL.Variant({
@@ -188,6 +233,7 @@ export const idlService = IDL.Service({
   '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
   'activateFreeTrial' : IDL.Func([], [], []),
+  'addGroupMember' : IDL.Func([GroupId, UserId], [], []),
   'addMysteryItem' : IDL.Func([MysteryItem], [], []),
   'addStoreItem' : IDL.Func([PointsStoreItem], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
@@ -199,18 +245,37 @@ export const idlService = IDL.Service({
       [IDL.Text],
       [],
     ),
+  'createGroup' : IDL.Func([IDL.Text, IDL.Text], [GroupId], []),
   'createProfile' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'deleteMysteryItem' : IDL.Func([IDL.Text], [], []),
   'deleteStoreItem' : IDL.Func([IDL.Text], [], []),
   'getAllMysteryItems' : IDL.Func([], [IDL.Vec(MysteryItem)], ['query']),
   'getAllProfiles' : IDL.Func([], [IDL.Vec(UserProfile)], ['query']),
+  'getAvailableSearchEngines' : IDL.Func(
+      [],
+      [IDL.Vec(SearchEngine)],
+      ['query'],
+    ),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+  'getDefaultSearchEngine' : IDL.Func([], [IDL.Text], ['query']),
+  'getDirectMessagePartners' : IDL.Func(
+      [],
+      [IDL.Vec(IDL.Principal)],
+      ['query'],
+    ),
+  'getDirectMessages' : IDL.Func(
+      [IDL.Principal],
+      [IDL.Vec(DirectMessage)],
+      ['query'],
+    ),
   'getFriendsMusicUploads' : IDL.Func(
       [UserId],
       [IDL.Vec(MusicUpload)],
       ['query'],
     ),
+  'getGroup' : IDL.Func([GroupId], [IDL.Opt(Group)], ['query']),
+  'getGroupMessages' : IDL.Func([GroupId], [IDL.Vec(GroupMessage)], ['query']),
   'getLastClaimedMysteryItem' : IDL.Func(
       [UserId],
       [IDL.Opt(MysteryItem)],
@@ -226,8 +291,10 @@ export const idlService = IDL.Service({
   'getPointsHistory' : IDL.Func([], [IDL.Vec(PointsTransaction)], ['query']),
   'getProfile' : IDL.Func([UserId], [UserProfile], ['query']),
   'getRecentStatuses' : IDL.Func([IDL.Nat], [IDL.Vec(FeedItem)], ['query']),
+  'getSearchHistory' : IDL.Func([], [IDL.Vec(SearchHistoryEntry)], ['query']),
   'getStoreItems' : IDL.Func([], [IDL.Vec(PointsStoreItem)], ['query']),
   'getStripeSessionStatus' : IDL.Func([IDL.Text], [StripeSessionStatus], []),
+  'getUserGroups' : IDL.Func([], [IDL.Vec(Group)], ['query']),
   'getUserMysteryItems' : IDL.Func(
       [UserId],
       [IDL.Vec(DailyMysteryItemData)],
@@ -243,8 +310,16 @@ export const idlService = IDL.Service({
   'isStripeConfigured' : IDL.Func([], [IDL.Bool], ['query']),
   'purchasePoints' : IDL.Func([IDL.Nat], [IDL.Text], []),
   'purchaseStoreItem' : IDL.Func([IDL.Text], [IDL.Text], []),
+  'recordSearchHistory' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'searchProfiles' : IDL.Func([IDL.Text], [IDL.Vec(SearchResult)], ['query']),
+  'sendDirectMessage' : IDL.Func([IDL.Principal, IDL.Text], [], []),
+  'sendGroupMessage' : IDL.Func(
+      [GroupId, IDL.Text, IDL.Opt(MediaAttachment)],
+      [],
+      [],
+    ),
+  'setDefaultSearchEngine' : IDL.Func([IDL.Text], [], []),
   'setStripeConfiguration' : IDL.Func([StripeConfiguration], [], []),
   'spendPoints' : IDL.Func([IDL.Nat], [IDL.Text], []),
   'transform' : IDL.Func(
@@ -293,6 +368,8 @@ export const idlFactory = ({ IDL }) => {
     'success' : IDL.Opt(IDL.Bool),
     'topped_up_amount' : IDL.Opt(IDL.Nat),
   });
+  const GroupId = IDL.Text;
+  const UserId = IDL.Principal;
   const MysteryItemType = IDL.Variant({
     'message' : IDL.Null,
     'badge' : IDL.Null,
@@ -335,8 +412,6 @@ export const idlFactory = ({ IDL }) => {
     'description' : IDL.Text,
     'earnedAt' : Timestamp,
   });
-  const UserId = IDL.Principal;
-  const Points = IDL.Nat;
   const ExternalBlob = IDL.Vec(IDL.Nat8);
   const MusicUpload = IDL.Record({
     'id' : IDL.Text,
@@ -369,8 +444,47 @@ export const idlFactory = ({ IDL }) => {
       'contentType' : IDL.Text,
     }),
     'isPremiumMember' : IDL.Bool,
-    'points' : Points,
+    'points' : IDL.Nat,
     'musicUploads' : IDL.Vec(MusicUpload),
+  });
+  const SearchEngine = IDL.Record({
+    'id' : IDL.Text,
+    'name' : IDL.Text,
+    'description' : IDL.Text,
+    'apiUrl' : IDL.Text,
+  });
+  const MessageId = IDL.Nat;
+  const DirectMessage = IDL.Record({
+    'id' : MessageId,
+    'content' : IDL.Text,
+    'sender' : UserId,
+    'timestamp' : Timestamp,
+    'receiver' : UserId,
+  });
+  const Group = IDL.Record({
+    'id' : GroupId,
+    'members' : IDL.Vec(UserId),
+    'name' : IDL.Text,
+    'createdAt' : Timestamp,
+    'createdBy' : UserId,
+    'description' : IDL.Text,
+  });
+  const MediaAttachment = IDL.Record({
+    'url' : IDL.Text,
+    'contentType' : IDL.Text,
+    'mediaType' : IDL.Variant({
+      'audio' : IDL.Null,
+      'video' : IDL.Null,
+      'image' : IDL.Null,
+    }),
+  });
+  const GroupMessage = IDL.Record({
+    'id' : IDL.Text,
+    'content' : IDL.Text,
+    'mediaAttachment' : IDL.Opt(MediaAttachment),
+    'sender' : UserId,
+    'groupId' : GroupId,
+    'timestamp' : Timestamp,
   });
   const TransactionType = IDL.Variant({
     'earn' : IDL.Null,
@@ -389,6 +503,12 @@ export const idlFactory = ({ IDL }) => {
     'status' : Status,
     'username' : IDL.Text,
     'userId' : UserId,
+    'timestamp' : Timestamp,
+  });
+  const SearchHistoryEntry = IDL.Record({
+    'userId' : UserId,
+    'searchTerm' : IDL.Text,
+    'searchType' : IDL.Text,
     'timestamp' : Timestamp,
   });
   const StripeSessionStatus = IDL.Variant({
@@ -465,6 +585,7 @@ export const idlFactory = ({ IDL }) => {
     '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
     'activateFreeTrial' : IDL.Func([], [], []),
+    'addGroupMember' : IDL.Func([GroupId, UserId], [], []),
     'addMysteryItem' : IDL.Func([MysteryItem], [], []),
     'addStoreItem' : IDL.Func([PointsStoreItem], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
@@ -476,16 +597,39 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Text],
         [],
       ),
+    'createGroup' : IDL.Func([IDL.Text, IDL.Text], [GroupId], []),
     'createProfile' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'deleteMysteryItem' : IDL.Func([IDL.Text], [], []),
     'deleteStoreItem' : IDL.Func([IDL.Text], [], []),
     'getAllMysteryItems' : IDL.Func([], [IDL.Vec(MysteryItem)], ['query']),
     'getAllProfiles' : IDL.Func([], [IDL.Vec(UserProfile)], ['query']),
+    'getAvailableSearchEngines' : IDL.Func(
+        [],
+        [IDL.Vec(SearchEngine)],
+        ['query'],
+      ),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+    'getDefaultSearchEngine' : IDL.Func([], [IDL.Text], ['query']),
+    'getDirectMessagePartners' : IDL.Func(
+        [],
+        [IDL.Vec(IDL.Principal)],
+        ['query'],
+      ),
+    'getDirectMessages' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Vec(DirectMessage)],
+        ['query'],
+      ),
     'getFriendsMusicUploads' : IDL.Func(
         [UserId],
         [IDL.Vec(MusicUpload)],
+        ['query'],
+      ),
+    'getGroup' : IDL.Func([GroupId], [IDL.Opt(Group)], ['query']),
+    'getGroupMessages' : IDL.Func(
+        [GroupId],
+        [IDL.Vec(GroupMessage)],
         ['query'],
       ),
     'getLastClaimedMysteryItem' : IDL.Func(
@@ -503,8 +647,10 @@ export const idlFactory = ({ IDL }) => {
     'getPointsHistory' : IDL.Func([], [IDL.Vec(PointsTransaction)], ['query']),
     'getProfile' : IDL.Func([UserId], [UserProfile], ['query']),
     'getRecentStatuses' : IDL.Func([IDL.Nat], [IDL.Vec(FeedItem)], ['query']),
+    'getSearchHistory' : IDL.Func([], [IDL.Vec(SearchHistoryEntry)], ['query']),
     'getStoreItems' : IDL.Func([], [IDL.Vec(PointsStoreItem)], ['query']),
     'getStripeSessionStatus' : IDL.Func([IDL.Text], [StripeSessionStatus], []),
+    'getUserGroups' : IDL.Func([], [IDL.Vec(Group)], ['query']),
     'getUserMysteryItems' : IDL.Func(
         [UserId],
         [IDL.Vec(DailyMysteryItemData)],
@@ -520,8 +666,16 @@ export const idlFactory = ({ IDL }) => {
     'isStripeConfigured' : IDL.Func([], [IDL.Bool], ['query']),
     'purchasePoints' : IDL.Func([IDL.Nat], [IDL.Text], []),
     'purchaseStoreItem' : IDL.Func([IDL.Text], [IDL.Text], []),
+    'recordSearchHistory' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'searchProfiles' : IDL.Func([IDL.Text], [IDL.Vec(SearchResult)], ['query']),
+    'sendDirectMessage' : IDL.Func([IDL.Principal, IDL.Text], [], []),
+    'sendGroupMessage' : IDL.Func(
+        [GroupId, IDL.Text, IDL.Opt(MediaAttachment)],
+        [],
+        [],
+      ),
+    'setDefaultSearchEngine' : IDL.Func([IDL.Text], [], []),
     'setStripeConfiguration' : IDL.Func([StripeConfiguration], [], []),
     'spendPoints' : IDL.Func([IDL.Nat], [IDL.Text], []),
     'transform' : IDL.Func(

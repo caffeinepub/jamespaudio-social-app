@@ -1,11 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Add a clearly labeled “Web Search Ultra (Coming Soon)” option to the Advanced Search Engine results UI as a UI-only future feature.
+**Goal:** Implement end-to-end 1:1 direct messaging (DMs) so authenticated users can message another user, view conversation history, and see an inbox-style chat list driven by DM activity.
 
 **Planned changes:**
-- Update `frontend/src/pages/SearchEnginePage.tsx` to include a new “Web Search Ultra” tab in the results tab row when a search has been submitted, visibly marked as “Coming Soon”.
-- Add a non-functional placeholder view for the Web Search Ultra tab that explains (in accurate English) that public web/news search is coming soon and does not perform any backend/external calls.
-- Add a user action in the placeholder (e.g., button) that, when clicked, shows a clear “Coming Soon” toast/message.
+- Add Motoko canister methods in `backend/main.mo` to send a direct message and to query the full DM conversation between the caller and a specified other user, returning messages in chronological order and restricting access to participants only.
+- Add a Motoko canister query method in `backend/main.mo` to return the caller’s unique DM conversation partners ordered by most recent message activity (for an inbox/chat list).
+- Implement `useSendMessage` and `useGetMessagesWithUser` in `frontend/src/hooks/useQueries.ts` to call the new backend DM APIs and update the chat UI so sent messages appear quickly (optimistic update or immediate refetch) and new incoming messages appear via polling/refetch without a full page reload.
+- Update the Chats page sidebar to use the backend DM inbox/chat list as its data source while keeping the existing search filter behavior and ensuring selecting a user opens the correct 1:1 conversation.
 
-**User-visible outcome:** After running a search, users see a new “Web Search Ultra (Coming Soon)” tab; selecting it shows an informational coming-soon state, and attempting to use it shows a “Coming Soon” message.
+**User-visible outcome:** Users can send and receive 1:1 direct messages, browse their DM threads from a chat list ordered by recent activity (even without followers/following), and see new messages appear in the conversation without manually refreshing the page.
