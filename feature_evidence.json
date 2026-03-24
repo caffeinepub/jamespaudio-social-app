@@ -1,0 +1,142 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-update-the-group-chat-composer-frontend-groupconversation-so-the-message-input-textbox-is-visually-blue-by-default-when-chatting-in-groups-e-g-blue-tinted-background-border-focus-ring-without-changing-the-direct-message-chat-textbox-styling",
+      "featureTitle": "Update the group chat composer (frontend GroupConversation) so the message input textbox is visually blue by default when chatting in groups (e.g., blue-tinted background/border/focus ring), without changing the direct-message chat textbox styling.",
+      "files": [
+        "frontend/src/components/groups/GroupConversation.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "http-outcalls@3.0.0",
+        "stripe@3.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-7"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-a-group-chat-composer-color-changer-control-that-lets-users-choose-cycle-message-text-colors-with-plan-based-availability-free-normal-normal-only-pro-plan-black-orange-blue-purple-ultra-plan-adds-skulls-effect-and-flames-effect-ultimate-plan-adds-dodge-effect",
+      "featureTitle": "Add a group-chat composer “color changer” control that lets users choose/cycle message text colors with plan-based availability: Free/Normal = Normal only; Pro plan = Black, Orange, Blue, Purple; Ultra plan = adds Skulls effect and Flames effect; Ultimate plan = adds Dodge effect.",
+      "files": [
+        "frontend/src/components/groups/GroupComposerStylePicker.tsx",
+        "frontend/src/components/groups/GroupConversation.tsx",
+        "frontend/src/utils/membershipTier.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "http-outcalls@3.0.0",
+        "stripe@3.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-8"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-locked-style-handling-in-the-group-composer-ui-styles-not-available-to-the-current-user-s-plan-must-be-visible-but-not-selectable-and-must-show-an-english-lock-indicator-e-g-pro-ultra-ultimate-and-a-toast-message-explaining-the-required-plan-when-clicked",
+      "featureTitle": "Implement locked-style handling in the group composer UI: styles not available to the current user’s plan must be visible but not selectable, and must show an English lock indicator (e.g., “Pro”, “Ultra”, “Ultimate”) and a toast/message explaining the required plan when clicked.",
+      "files": [
+        "frontend/src/components/groups/GroupComposerStylePicker.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "http-outcalls@3.0.0",
+        "stripe@3.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-9"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-extend-message-styling-support-end-to-end-to-include-the-newly-requested-options-add-purple-and-blue-message-colors-and-add-a-dodge-message-effect-ensuring-group-messages-preserve-and-render-these-styles-consistently-send-store-fetch-and-display",
+      "featureTitle": "Extend message styling support end-to-end to include the newly requested options: add Purple and Blue message colors, and add a Dodge message effect, ensuring group messages preserve and render these styles consistently (send, store, fetch, and display).",
+      "files": [
+        "frontend/src/components/ChatWindow.tsx",
+        "frontend/src/components/groups/GroupConversation.tsx",
+        "frontend/src/utils/messageStyle.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "http-outcalls@3.0.0",
+        "stripe@3.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-10"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-define-and-implement-how-the-app-determines-the-user-s-plan-tier-free-pro-ultra-ultimate-using-the-existing-premium-membership-data-model-where-possible-if-new-backend-state-is-required-add-it-to-the-motoko-userprofile-and-expose-a-query-for-the-frontend-to-read-the-current-tier",
+      "featureTitle": "Define and implement how the app determines the user’s plan tier (Free/Pro/Ultra/Ultimate) using the existing premium membership data model where possible; if new backend state is required, add it to the Motoko UserProfile and expose a query for the frontend to read the current tier.",
+      "files": [
+        "frontend/src/components/groups/GroupConversation.tsx",
+        "frontend/src/hooks/useQueries.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "http-outcalls@3.0.0",
+        "stripe@3.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-11"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-group-chat-composer-default-style-behavior-so-that-in-group-chats-the-default-selected-message-color-starts-as-blue-and-remains-blue-after-sending-reset-while-preserving-any-existing-default-behavior-in-direct-messages",
+      "featureTitle": "Update the group chat composer default style behavior so that, in group chats, the default selected message color starts as Blue (and remains Blue after sending/reset), while preserving any existing default behavior in direct messages.",
+      "files": [
+        "frontend/src/components/groups/GroupConversation.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "http-outcalls@3.0.0",
+        "stripe@3.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-12"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

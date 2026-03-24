@@ -1,0 +1,489 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 3,
+  "summary": "JAMESPaudio is a decentralized “creative social hub” built on the Internet Computer. It consists of a React + TypeScript frontend (Tailwind + shadcn/ui, TanStack React Query, some TanStack Router usage) and a Motoko canister backend. Users authenticate with Internet Identity, create and manage profiles, search for other users, chat via direct messages and group conversations (including per-message styling metadata), track last-online presence, and use a points economy (wallet, transactions, store, daily rewards, and a daily mystery box). The app also includes premium membership (free trial + upgrades), music uploads via IC blob storage (ExternalBlob) with friends’ music discovery, and a “Search Engine Store” for choosing a default search provider with per-user search history. Many additional media/utility pages (videos, movies, radio, live TV, AI song generator, etc.) are implemented as frontend-only simulated modules. The backend also contains scaffolding for Stripe payments and IC HTTP outcalls, plus blob-storage maintenance endpoints and a migration for legacy message data.",
+  "existing_features": [
+    {
+      "id": "IF-1",
+      "title": "Internet Identity authentication provider",
+      "synonyms": [
+        "InternetIdentityProvider",
+        "AuthClient login/logout",
+        "delegation identity persistence"
+      ],
+      "description": "Provides login/logout using Internet Identity via @dfinity/auth-client, restores persisted identity on reload, and exposes detailed login status flags (initializing/logging-in/success/error) through a React context hook.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-2",
+      "title": "Identity-aware backend actor creation and bootstrap",
+      "synonyms": [
+        "useActor",
+        "authenticated canister actor",
+        "anonymous actor"
+      ],
+      "description": "Creates an anonymous canister actor for guests and an identity-authenticated actor for signed-in users. On authenticated actor creation, calls _initializeAccessControlWithSecret using a secret parameter extracted from the URL hash/session; invalidates/refetches non-actor React Query caches when the actor changes.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-3",
+      "title": "Role-based access control (RBAC) with admin bootstrap token",
+      "synonyms": [
+        "AccessControl",
+        "MixinAuthorization",
+        "admin/user/guest roles"
+      ],
+      "description": "Motoko RBAC assigns roles per Principal and enforces authorization. Includes bootstrap initialization using CAFFEINE_ADMIN_TOKEN + user-provided secret, plus APIs to query caller role/admin status and to assign roles (admin-only).",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-4",
+      "title": "Main application shell with responsive navigation",
+      "synonyms": [
+        "MainApp",
+        "sidebar navigation",
+        "mobile sheet menu"
+      ],
+      "description": "Authenticated app shell with a desktop sidebar and a mobile slide-in menu. Uses internal state to switch between major pages, and supports navigating into Groups with an optional targetGroupId for auto-selection.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-5",
+      "title": "App bootstrap gating (loading screen, login gating, profile setup gating)",
+      "synonyms": [
+        "LoadingScreen",
+        "LoginPage",
+        "ProfileSetupModal"
+      ],
+      "description": "Shows a branded loading screen on startup, routes unauthenticated users to a branded login/marketing page, and blocks first-time authenticated users with a mandatory profile-creation modal before entering the main app.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-6",
+      "title": "User profile creation, retrieval, and editing (bio + picture)",
+      "synonyms": [
+        "createProfile",
+        "getProfile",
+        "updateProfile"
+      ],
+      "description": "Backend supports creating a profile (username + bio), publicly fetching a profile by Principal, and updating a profile’s bio and profilePicture metadata. Frontend renders Profile page with stats and provides an Edit Profile dialog.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-7",
+      "title": "Public user search by username",
+      "synonyms": [
+        "SearchPage",
+        "searchProfiles",
+        "UserCard"
+      ],
+      "description": "Search page queries backend searchProfiles for username matches and renders results as user cards with profile info and action buttons.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-8",
+      "title": "Presence / last-online tracking",
+      "synonyms": [
+        "updateLastOnline",
+        "getLastOnline",
+        "getLastOnlineForMultipleUsers"
+      ],
+      "description": "Backend stores per-user lastOnline timestamps. Frontend periodically updates the caller’s last-online and displays ‘Active now’ / time-ago status in profile and chat partner lists.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-9",
+      "title": "Recent statuses discovery feed",
+      "synonyms": [
+        "getRecentStatuses",
+        "What's Recent"
+      ],
+      "description": "Feed page includes a ‘What’s Recent’ section backed by getRecentStatuses(limit), showing recent user activity/status for discovery (publicly accessible).",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-10",
+      "title": "Direct messaging APIs (send, fetch conversation, list partners)",
+      "synonyms": [
+        "sendDirectMessage",
+        "getDirectMessages",
+        "getDirectMessagePartners"
+      ],
+      "description": "Backend supports 1:1 direct messages with per-message styling metadata, querying a conversation between caller and another principal, and returning unique conversation partners ordered by most recent activity.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-11",
+      "title": "Direct messaging UI with polling and last-online updates",
+      "synonyms": [
+        "ChatsPage",
+        "ChatList",
+        "ChatWindow"
+      ],
+      "description": "Frontend chat UI shows DM partners, supports searching users, renders conversation messages with timestamps, polls for updates, auto-scrolls to newest messages, and updates the caller’s last-online timestamp on an interval.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-12",
+      "title": "Per-message text color styling in chats",
+      "synonyms": [
+        "MessageColor",
+        "composer color cycle",
+        "messageStyle utilities"
+      ],
+      "description": "Implements per-message text color selection (Normal → Black → Orange → Cyan) via a one-tap cycle control in DM and group composers; color is stored with each message and rendered consistently (with backward-compatible defaults for older messages).",
+      "reqIds": [
+        "REQ-3",
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "IF-13",
+      "title": "Per-message lightweight text effects in chats",
+      "synonyms": [
+        "MessageEffect",
+        "skull/fiery/devil effects",
+        "effect decoration"
+      ],
+      "description": "Adds optional per-message effects (at minimum skull/fiery/devil) selectable in the composer; effects are stored per message and rendered as lightweight decorations (emoji prefix) to avoid lag.",
+      "reqIds": [
+        "REQ-4",
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "IF-14",
+      "title": "Send button style toggle in chat composers",
+      "synonyms": [
+        "send button theme toggle",
+        "emoji send button"
+      ],
+      "description": "Chat composers in DM and group chat include a clean single-tap toggle between a normal send icon and an emoji-style (skull) send button presentation.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "IF-15",
+      "title": "Groups: create, list, fetch details, and manage membership",
+      "synonyms": [
+        "createGroup",
+        "getUserGroups",
+        "getGroup",
+        "addGroupMember"
+      ],
+      "description": "Backend supports group creation and membership management; frontend shows a groups list sidebar, supports selecting a group, and provides create-group and add-member flows with toast feedback and cache invalidation.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-16",
+      "title": "Group messaging with optional media attachments",
+      "synonyms": [
+        "sendGroupMessage",
+        "getGroupMessages",
+        "GroupConversation"
+      ],
+      "description": "Member-only group chat supports sending messages with optional mediaAttachment (image/video/audio metadata) and fetching group messages. Frontend provides a conversation UI with polling and auto-scroll and renders attachments when present.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-17",
+      "title": "Search → start group chat → auto-open group conversation",
+      "synonyms": [
+        "useStartGroupChat",
+        "Start group chat button",
+        "targetGroupId navigation"
+      ],
+      "description": "From user search results, an authenticated user can create a new group, add the selected user, and automatically navigate to the Groups page with the newly created group selected and ready to chat.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "IF-18",
+      "title": "Group creation UX with in-dialog user search and multi-select initial members",
+      "synonyms": [
+        "CreateGroupDialog",
+        "initial members selection",
+        "post-create auto-open"
+      ],
+      "description": "Group creation dialog supports searching users during creation, selecting multiple initial members, adding them immediately after group creation, and auto-selecting/opening the newly created group conversation.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "IF-19",
+      "title": "Points wallet and transaction history",
+      "synonyms": [
+        "getPointsBalance",
+        "getPointsHistory",
+        "PointsPage"
+      ],
+      "description": "Backend tracks points and records transactions (earn/spend/purchase). Frontend Points page shows current balance (from profile), quick stats, and a sorted transaction history with icons and type-based styling.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-20",
+      "title": "Points store (browse items, redeem items, demo purchase points)",
+      "synonyms": [
+        "getStoreItems",
+        "purchaseStoreItem",
+        "purchasePoints",
+        "PointsStorePage"
+      ],
+      "description": "Backend exposes a store catalog and supports redeeming items by spending points and demo purchasing points. Frontend provides a tabbed store experience with validation and toast feedback.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-21",
+      "title": "Daily rewards claim (once per day) with streak tracking",
+      "synonyms": [
+        "claimDailyReward",
+        "DailyRewardsPage",
+        "dailyLoginStreak"
+      ],
+      "description": "Daily reward grants points once per day, updates streak counters, and records a transaction. Frontend provides claim UI, eligibility gating, simple animations, and streak/balance stats.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-22",
+      "title": "Daily Items Secret (daily mystery box)",
+      "synonyms": [
+        "claimDailyItemsSecret",
+        "isMysteryItemClaimAvailable",
+        "getLastClaimedMysteryItem"
+      ],
+      "description": "Daily mystery box feature supports checking eligibility, claiming a randomized item (points/badge/visual/message), showing animations, displaying the revealed item, and listing the last claimed item.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-23",
+      "title": "Music uploads via ExternalBlob with friends’ music discovery",
+      "synonyms": [
+        "uploadMusic",
+        "ExternalBlob",
+        "getFriendsMusicUploads",
+        "MusicPage"
+      ],
+      "description": "Users can upload music files via ExternalBlob with upload progress; uploads are stored on the profile. Users can fetch and browse tracks uploaded by principals they follow, with playback controls in the UI.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-24",
+      "title": "Premium membership and free trial lifecycle",
+      "synonyms": [
+        "upgradeToPremium",
+        "activateFreeTrial",
+        "MembersOnlyPage"
+      ],
+      "description": "Backend supports upgrading to premium (with expiration) and a one-time 3-day free trial. Frontend Members-Only page gates content based on premium or active trial status and provides upgrade/trial actions.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-25",
+      "title": "Search Engine Store (catalog + default provider + search history)",
+      "synonyms": [
+        "getAvailableSearchEngines",
+        "getDefaultSearchEngine",
+        "setDefaultSearchEngine",
+        "recordSearchHistory",
+        "getSearchHistory"
+      ],
+      "description": "Guests can browse available search engines; authenticated users can set a per-user default engine and view their recent search history recorded by the app.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-26",
+      "title": "Advanced search engine page (voice search, math solver, AI voice, mock web search)",
+      "synonyms": [
+        "SearchEnginePage",
+        "SpeechRecognition",
+        "speechSynthesis",
+        "safeMathEvaluate",
+        "Web Search Ultra"
+      ],
+      "description": "Implements multi-tab search with browser voice recognition input, a safe on-device arithmetic/math solver with steps, optional spoken results controlled by settings, mocked web search results, and authenticated search history recording.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-27",
+      "title": "Stripe + HTTP outcalls scaffolding (backend)",
+      "synonyms": [
+        "Stripe checkout session",
+        "IC http_request",
+        "transform"
+      ],
+      "description": "Backend includes reusable HTTP GET/POST outcall helpers (with response header stripping via transform) and Stripe checkout session creation/status APIs plus admin-only Stripe configuration.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-28",
+      "title": "Blob storage maintenance endpoints (backend mixin)",
+      "synonyms": [
+        "_caffeineStorage*",
+        "dead blob pruning",
+        "cashier refill"
+      ],
+      "description": "Includes endpoints for authorized gateway principal registry updates, dead blob enumeration and confirmed deletion (with GC trigger), blob liveness checks, and cashier cycle refills.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-29",
+      "title": "Frontend-only simulated modules and informational pages",
+      "synonyms": [
+        "placeholder/demo pages",
+        "media modules"
+      ],
+      "description": "Implements several UI-only or simulated experiences: AI Song Generator, Videos (local object URL), Movies (sample listings), Radio, Live TV, Phone Protection scan, Robux Simulator, Creator Studio dashboard, Help/What’s New/Roadmap/Games Coming Soon pages.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "IF-30",
+      "title": "Theme toggle (light/dark) and design token theming",
+      "synonyms": [
+        "next-themes",
+        "Tailwind OKLCH tokens"
+      ],
+      "description": "Global theming via CSS variables with light/dark mode support and a header theme toggle; multiple themed color palettes exist for different app sections.",
+      "reqIds": [],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-group-chat-composer-frontend-groupconversation-so-the-message-input-textbox-is-visually-blue-by-default-when-chatting-in-groups-e-g-blue-tinted-background-border-focus-ring-without-changing-the-direct-message-chat-textbox-styling",
+      "title": "Update the group chat composer (frontend GroupConversation) so the message input textbox is visually blue by default when chatting in groups (e.g., blue-tinted background/border/focus ring), without changing the direct-message chat textbox styling.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-group-chat-composer-color-changer-control-that-lets-users-choose-cycle-message-text-colors-with-plan-based-availability-free-normal-normal-only-pro-plan-black-orange-blue-purple-ultra-plan-adds-skulls-effect-and-flames-effect-ultimate-plan-adds-dodge-effect",
+      "title": "Add a group-chat composer “color changer” control that lets users choose/cycle message text colors with plan-based availability: Free/Normal = Normal only; Pro plan = Black, Orange, Blue, Purple; Ultra plan = adds Skulls effect and Flames effect; Ultimate plan = adds Dodge effect.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-locked-style-handling-in-the-group-composer-ui-styles-not-available-to-the-current-user-s-plan-must-be-visible-but-not-selectable-and-must-show-an-english-lock-indicator-e-g-pro-ultra-ultimate-and-a-toast-message-explaining-the-required-plan-when-clicked",
+      "title": "Implement locked-style handling in the group composer UI: styles not available to the current user’s plan must be visible but not selectable, and must show an English lock indicator (e.g., “Pro”, “Ultra”, “Ultimate”) and a toast/message explaining the required plan when clicked.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-extend-message-styling-support-end-to-end-to-include-the-newly-requested-options-add-purple-and-blue-message-colors-and-add-a-dodge-message-effect-ensuring-group-messages-preserve-and-render-these-styles-consistently-send-store-fetch-and-display",
+      "title": "Extend message styling support end-to-end to include the newly requested options: add Purple and Blue message colors, and add a Dodge message effect, ensuring group messages preserve and render these styles consistently (send, store, fetch, and display).",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-define-and-implement-how-the-app-determines-the-user-s-plan-tier-free-pro-ultra-ultimate-using-the-existing-premium-membership-data-model-where-possible-if-new-backend-state-is-required-add-it-to-the-motoko-userprofile-and-expose-a-query-for-the-frontend-to-read-the-current-tier",
+      "title": "Define and implement how the app determines the user’s plan tier (Free/Pro/Ultra/Ultimate) using the existing premium membership data model where possible; if new backend state is required, add it to the Motoko UserProfile and expose a query for the frontend to read the current tier.",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-group-chat-composer-default-style-behavior-so-that-in-group-chats-the-default-selected-message-color-starts-as-blue-and-remains-blue-after-sending-reset-while-preserving-any-existing-default-behavior-in-direct-messages",
+      "title": "Update the group chat composer default style behavior so that, in group chats, the default selected message color starts as Blue (and remains Blue after sending/reset), while preserving any existing default behavior in direct messages.",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Group chat composer: make the message text box blue by default in groups and add a color/style changer",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Plan-gated chat styles: Free/Normal vs Pro/Ultra/Ultimate unlocking additional colors (e.g., purple) and effects (skulls/flames/dodge) with one-tap cycling and locked badges",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Add message deletion capability (e.g., delete your own message)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Add emoji animations with upsell prompts (e.g., “Get Pro/Ultra”) for locked animated reactions/effects",
+      "reqIds": [],
+      "status": "pending"
+    }
+  ],
+  "architectural_notes": [
+    "Frontend is React + TypeScript using TailwindCSS and shadcn/ui primitives; lucide-react for icons; sonner for toast notifications.",
+    "Data fetching/mutations are centralized via @tanstack/react-query hooks (frontend/src/hooks/useQueries.ts), with query-key based caching and targeted invalidation on mutation success.",
+    "Authentication uses Internet Identity via @dfinity/auth-client in a context provider (useInternetIdentity).",
+    "Backend actor creation is identity-aware (useActor), cached via React Query; when authenticated, it calls a backend bootstrap method (_initializeAccessControlWithSecret) using a secret extracted from the URL hash/session to register roles.",
+    "Motoko backend uses in-memory state via mo:core Map and List collections; functional domains (authorization, blob storage) are composed via mixins included into the main actor.",
+    "Authorization is role-based (admin/user/guest) and enforced at canister entrypoints via AccessControl.hasPermission; admin setup depends on an environment token (CAFFEINE_ADMIN_TOKEN).",
+    "Chat message style metadata (color + effect) is supported in both DM and group messages; a migration module upgrades older stored message records by adding default style values.",
+    "Realtime-ish messaging is implemented via periodic polling/refetch (DMs ~3s; groups ~5s) plus auto-scroll to bottom when message arrays change.",
+    "Navigation is mixed: MainApp uses internal component state for most page switching, while some pages/components use TanStack Router navigation (e.g., /points, /search-engine-store), which can affect deep-linking/back behavior.",
+    "Voice features (speech recognition + speech synthesis) in the advanced search page are browser-dependent; settings for AI voice are persisted in localStorage and synchronized across tabs via storage events and a custom same-tab event."
+  ],
+  "known_issues": [
+    "Follow/unfollow is stubbed: useFollowUser/useUnfollowUser throw “not yet implemented”, so follow UI cannot succeed.",
+    "Home feed and friend suggestions are stubbed: useGetHomeFeed/useGetFriendSuggestions return empty arrays, so those sections are always empty aside from the ‘What’s Recent’ statuses.",
+    "Backend content search is not implemented: useSearchContent returns empty results; advanced search tabs for apps/music/video/movie do not return real backend results (math solver and mock web search are the only functional result sources).",
+    "Published apps are not implemented end-to-end: useGetAllPublishedApps returns [] and usePublishApp throws “not yet implemented”, so PublishedApps is UI-only.",
+    "Live streams are not implemented end-to-end: useGetLiveStreams returns [] and create/stop stream mutations throw “not yet implemented”, so LiveStreams is UI-only.",
+    "Premium content listing is stubbed: useGetPremiumContent returns [], so MembersOnly cannot show real premium items.",
+    "Backend bug: updatePointsBalance sets points = amount when amount is positive (overwrites balance) instead of adding; can corrupt balances for features that use updatePointsBalance (e.g., mystery rewards).",
+    "Backend bug: Daily Items Secret claim gating uses dailyItemsRewardHistory.get(userId.toText()), but claims are stored under claimId (caller_time), so last-claim lookup can fail and allow/deny incorrectly.",
+    "Profile ‘status’ exists in types/UI state (EditProfileDialog) but is not actually saved/updated (backend updateProfile does not accept status; frontend doesn’t send it).",
+    "Deployment footgun: blob-storage expects env var CAFFFEINE_STORAGE_CASHIER_PRINCIPAL (triple “F”); misconfiguration traps at runtime.",
+    "RBAC bootstrap brittleness: _initializeAccessControlWithSecret traps if CAFFEINE_ADMIN_TOKEN is missing from canister env; authenticated actor creation will fail hard in that case.",
+    "Canister state is primarily in-memory Maps/Lists; without stable serialization and explicit upgrade hooks, data persistence across upgrades may be fragile.",
+    "Polling-based chat updates may be inefficient at scale compared to push/streaming approaches.",
+    "User reports group creation flow 'won’t let me create group' (may still be broken despite prior attempted fixes)."
+  ],
+  "isFixRequest": false,
+  "gameProjectType": "none",
+  "projectName": "JAMESPaudio",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

@@ -1,0 +1,130 @@
+{
+  "kind": "build_request",
+  "title": "Group chat blue composer + plan-gated color/effect style changer",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-7",
+      "text": "Update the group chat composer (frontend GroupConversation) so the message input textbox is visually blue by default when chatting in groups (e.g., blue-tinted background/border/focus ring), without changing the direct-message chat textbox styling.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-20"
+        ],
+        "quotes": [
+          "make text box where its blue when chat in groups"
+        ]
+      },
+      "acceptanceCriteria": [
+        "In group chats, the message input has a clearly blue visual style (background and/or border and/or focus ring).",
+        "In direct messages, the message input styling remains unchanged."
+      ]
+    },
+    {
+      "id": "REQ-8",
+      "text": "Add a group-chat composer “color changer” control that lets users choose/cycle message text colors with plan-based availability: Free/Normal = Normal only; Pro plan = Black, Orange, Blue, Purple; Ultra plan = adds Skulls effect and Flames effect; Ultimate plan = adds Dodge effect.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-20"
+        ],
+        "quotes": [
+          "add color changer like black normal orange blue pro plan purple pro plan skulls ultra plan dodge ultimate plan flames ultra plan"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The group composer shows controls to change message style before sending (color and effect).",
+        "Free/Normal users can only select Normal color and no special effects beyond None.",
+        "Pro users can select Black, Orange, Blue, and Purple colors.",
+        "Ultra users can select Skulls and Flames effects (in addition to prior unlocked options).",
+        "Ultimate users can select Dodge effect (in addition to prior unlocked options)."
+      ]
+    },
+    {
+      "id": "REQ-9",
+      "text": "Implement locked-style handling in the group composer UI: styles not available to the current user’s plan must be visible but not selectable, and must show an English lock indicator (e.g., “Pro”, “Ultra”, “Ultimate”) and a toast/message explaining the required plan when clicked.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-20"
+        ],
+        "quotes": [
+          "add color changer like black normal orange blue pro plan purple pro plan skulls ultra plan dodge ultimate plan flames ultra plan"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Locked color/effect options are clearly marked with the required plan label in English.",
+        "Attempting to use a locked option does not change the selected style and shows an English explanation/toast indicating the required plan."
+      ]
+    },
+    {
+      "id": "REQ-10",
+      "text": "Extend message styling support end-to-end to include the newly requested options: add Purple and Blue message colors, and add a Dodge message effect, ensuring group messages preserve and render these styles consistently (send, store, fetch, and display).",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-20"
+        ],
+        "quotes": [
+          "purple pro plan",
+          "blue pro plan",
+          "dodge ultimate plan"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Sending a group message with Purple or Blue selected results in recipients seeing the correct color styling on the message bubble text.",
+        "Sending a group message with Dodge selected results in recipients seeing a distinct (lightweight) Dodge effect rendering for that message.",
+        "Existing message styling (Normal/Black/Orange/Cyan and existing effects) continues to work."
+      ]
+    },
+    {
+      "id": "REQ-11",
+      "text": "Define and implement how the app determines the user’s plan tier (Free/Pro/Ultra/Ultimate) using the existing premium membership data model where possible; if new backend state is required, add it to the Motoko UserProfile and expose a query for the frontend to read the current tier.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-20"
+        ],
+        "quotes": [
+          "pro plan",
+          "ultra plan",
+          "ultimate plan"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The frontend can reliably determine the current user’s plan tier and use it to gate available chat styles in group chat.",
+        "Unauthenticated users or users without a profile are treated as Free/Normal for gating purposes."
+      ]
+    },
+    {
+      "id": "REQ-12",
+      "text": "Update the group chat composer default style behavior so that, in group chats, the default selected message color starts as Blue (and remains Blue after sending/reset), while preserving any existing default behavior in direct messages.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-20"
+        ],
+        "quotes": [
+          "make text box where its blue when chat in groups"
+        ]
+      },
+      "acceptanceCriteria": [
+        "When opening a group conversation, the selected composer message color defaults to Blue.",
+        "After sending a group message, the composer selection resets back to Blue (not Normal).",
+        "Direct message composer behavior is unchanged."
+      ]
+    }
+  ],
+  "constraints": [
+    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
+    "Do not edit files under frontend/src/components/ui or other immutable frontend paths listed in SYSTEM_CONTEXT; compose existing UI components instead."
+  ],
+  "nonGoals": [
+    "Do not add message deletion, reactions, or emoji animations as part of this change.",
+    "Do not redesign the entire chat UI beyond the group composer textbox blue styling and the style changer controls."
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  }
+}

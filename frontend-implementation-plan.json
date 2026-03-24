@@ -1,0 +1,127 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Group chat composer blue styling + membership-tier gated message styles",
+  "requirements": [
+    {
+      "id": "REQ-7",
+      "summary": "Make the group chat composer message input visually blue by default without changing DM input styling.",
+      "acceptanceCriteria": [
+        "In group chats, the message input has a clearly blue visual style (background and/or border and/or focus ring).",
+        "In direct messages, the message input styling remains unchanged."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/groups/GroupConversation.tsx",
+          "operation": "modify",
+          "description": "Update the group composer <Input> styling to apply a distinct blue-tinted background/border/focus ring only within GroupConversation (do not change shared Input component or DM ChatWindow)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-8",
+      "summary": "Add a group-chat composer style changer (color/effect) with plan-based availability for Free/Pro/Ultra/Ultimate tiers.",
+      "acceptanceCriteria": [
+        "The group composer shows controls to change message style before sending (color and effect).",
+        "Free/Normal users can only select Normal color and no special effects beyond None.",
+        "Pro users can select Black, Orange, Blue, and Purple colors.",
+        "Ultra users can select Skulls and Flames effects (in addition to prior unlocked options).",
+        "Ultimate users can select Dodge effect (in addition to prior unlocked options)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/groups/GroupComposerStylePicker.tsx",
+          "operation": "create",
+          "description": "Create a dedicated group-composer style picker component that renders color and effect options, supports selecting unlocked options, and surfaces locked options per membership tier (UI-only; no backend changes)."
+        },
+        {
+          "path": "frontend/src/components/groups/GroupConversation.tsx",
+          "operation": "modify",
+          "description": "Replace/extend the existing cycle buttons with the new GroupComposerStylePicker and ensure the selected MessageColor/MessageEffect values are passed to sendGroupMessage for group chats."
+        },
+        {
+          "path": "frontend/src/utils/membershipTier.ts",
+          "operation": "create",
+          "description": "Add small frontend utilities to compare membership tiers (Free/Pro/Ultra/Ultimate) and to compute which colors/effects are unlocked for a tier."
+        }
+      ]
+    },
+    {
+      "id": "REQ-9",
+      "summary": "Show locked styles in the group composer with plan labels and display an English toast explaining the required plan when clicked.",
+      "acceptanceCriteria": [
+        "Locked color/effect options are clearly marked with the required plan label in English.",
+        "Attempting to use a locked option does not change the selected style and shows an English explanation/toast indicating the required plan."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/groups/GroupComposerStylePicker.tsx",
+          "operation": "modify",
+          "description": "Implement locked-option behavior: render locked options as visible but non-selectable, show required plan label text (e.g., \"Pro\", \"Ultra\", \"Ultimate\"), and on click show an English toast explaining which plan is required while keeping the current selection unchanged."
+        }
+      ]
+    },
+    {
+      "id": "REQ-10",
+      "summary": "Ensure group messages can send and render Blue/Purple colors and the Dodge effect consistently in the UI while keeping existing styles working.",
+      "acceptanceCriteria": [
+        "Sending a group message with Purple or Blue selected results in recipients seeing the correct color styling on the message bubble text.",
+        "Sending a group message with Dodge selected results in recipients seeing a distinct (lightweight) Dodge effect rendering for that message.",
+        "Existing message styling (Normal/Black/Orange/Cyan and existing effects) continues to work."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/utils/messageStyle.ts",
+          "operation": "modify",
+          "description": "Extend message style helpers to support MessageColor.blue and MessageColor.purple labels/classes, and add lightweight UI rendering support for MessageEffect.dodge (e.g., a distinct class/decor indicator) while preserving existing mappings and normalization."
+        },
+        {
+          "path": "frontend/src/components/groups/GroupConversation.tsx",
+          "operation": "modify",
+          "description": "Update group message rendering to apply the updated color/effect helpers (including Blue/Purple text colors and Dodge effect rendering) for messages fetched from the backend."
+        },
+        {
+          "path": "frontend/src/components/ChatWindow.tsx",
+          "operation": "modify",
+          "description": "Update direct message rendering to use the updated messageStyle helpers so Blue/Purple/Dodge (if present in DM history) also render correctly without changing DM composer styling defaults."
+        }
+      ]
+    },
+    {
+      "id": "REQ-11",
+      "summary": "Determine the current user’s plan tier on the frontend using existing premium membership data, defaulting unauthenticated/no-profile users to Free/Normal.",
+      "acceptanceCriteria": [
+        "The frontend can reliably determine the current user’s plan tier and use it to gate available chat styles in group chat.",
+        "Unauthenticated users or users without a profile are treated as Free/Normal for gating purposes."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Add a React Query hook for reading the current user’s MembershipTier (using existing backend capabilities available via the actor) with safe fallback to Free when unauthenticated or when tier cannot be determined."
+        },
+        {
+          "path": "frontend/src/components/groups/GroupConversation.tsx",
+          "operation": "modify",
+          "description": "Use the new membership-tier hook to gate which style options are unlocked in the group composer while keeping locked options visible (Free/Normal fallback when identity/profile is unavailable)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-12",
+      "summary": "Default group composer selected message color to Blue (including after send/reset) while preserving DM defaults.",
+      "acceptanceCriteria": [
+        "When opening a group conversation, the selected composer message color defaults to Blue.",
+        "After sending a group message, the composer selection resets back to Blue (not Normal).",
+        "Direct message composer behavior is unchanged."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/groups/GroupConversation.tsx",
+          "operation": "modify",
+          "description": "Change initial group composer state so messageColor defaults to MessageColor.blue, and update the post-send reset logic to reset back to Blue (and effect to None) for group chats only."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+import React, { createContext, useContext, useState, ReactNode } from 'react';
+
+interface NavigationContextType {
+  targetGroupId: string | null;
+  setTargetGroupId: (groupId: string | null) => void;
+  navigateToGroups: (groupId?: string) => void;
+  onNavigateToGroups?: (groupId?: string) => void;
+}
+
+const NavigationContext = createContext<NavigationContextType | undefined>(undefined);
+
+export function NavigationProvider({ children }: { children: ReactNode }) {
+  const [targetGroupId, setTargetGroupId] = useState<string | null>(null);
+  const [onNavigateToGroups, setOnNavigateToGroups] = useState<((groupId?: string) => void) | undefined>(undefined);
+
+  const navigateToGroups = (groupId?: string) => {
+    if (groupId) {
+      setTargetGroupId(groupId);
+    }
+    if (onNavigateToGroups) {
+      onNavigateToGroups(groupId);
+    }
+  };
+
+  return (
+    <NavigationContext.Provider
+      value={{
+        targetGroupId,
+        setTargetGroupId,
+        navigateToGroups,
+        onNavigateToGroups,
+      }}
+    >
+      {children}
+    </NavigationContext.Provider>
+  );
+}
+
+export function useNavigation() {
+  const context = useContext(NavigationContext);
+  if (!context) {
+    throw new Error('useNavigation must be used within NavigationProvider');
+  }
+  return context;
+}
