@@ -54,6 +54,9 @@ export default function SearchEnginePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [submittedSearch, setSubmittedSearch] = useState("");
+  const [selectedEngine, setSelectedEngine] = useState<
+    "JAMESPaudio" | "Google" | "Bing" | "DuckDuckGo" | "YouTube"
+  >("JAMESPaudio");
   const [mathResult, setMathResult] = useState<MathResult | null>(null);
   const [isListening, setIsListening] = useState(false);
   const [voiceSupported, setVoiceSupported] = useState(false);
@@ -356,6 +359,57 @@ export default function SearchEnginePage() {
             Search Engine Store
           </Button>
         </div>
+
+        {/* Engine Selector */}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
+            Search Engine:
+            <span className="text-[10px] font-bold bg-yellow-400 text-yellow-900 rounded-full px-1.5 py-0.5 leading-none">
+              NEW
+            </span>
+          </span>
+          {(
+            ["JAMESPaudio", "Google", "Bing", "DuckDuckGo", "YouTube"] as const
+          ).map((engine) => (
+            <button
+              key={engine}
+              type="button"
+              className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                selectedEngine === engine
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "border-border hover:bg-muted"
+              }`}
+              onClick={() => setSelectedEngine(engine)}
+              data-ocid="search_engine.tab"
+            >
+              {engine}
+            </button>
+          ))}
+        </div>
+        {selectedEngine !== "JAMESPaudio" && (
+          <div className="flex items-center justify-between p-3 rounded-lg bg-muted border border-border">
+            <span className="text-sm text-muted-foreground">
+              Results will open in a new tab via {selectedEngine}
+            </span>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                const q = encodeURIComponent(searchTerm || "JAMESPaudio");
+                const urls: Record<string, string> = {
+                  Google: `https://google.com/search?q=${q}`,
+                  Bing: `https://bing.com/search?q=${q}`,
+                  DuckDuckGo: `https://duckduckgo.com/?q=${q}`,
+                  YouTube: `https://youtube.com/results?search_query=${q}`,
+                };
+                window.open(urls[selectedEngine], "_blank", "noopener");
+              }}
+              data-ocid="search_engine.secondary_button"
+            >
+              Open {selectedEngine} ↗
+            </Button>
+          </div>
+        )}
 
         {/* Search Bar with Voice */}
         <Card>

@@ -180,6 +180,9 @@ export default function LoginPage() {
                     <p>Join a vibrant community of creators</p>
                   </div>
                 </div>
+                <p className="text-center text-xs text-muted-foreground pt-2">
+                  More sign-in options coming soon (Google, Apple)
+                </p>
               </CardContent>
             </Card>
           </div>

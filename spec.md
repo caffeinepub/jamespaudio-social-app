@@ -1,18 +1,35 @@
-# Specification
+# JAMESPaudio
 
-## Summary
-**Goal:** Make the group chat composer visually distinct (blue) and add a plan-gated message style (color/effect) selector for group messages, with end-to-end support for new styles.
+## Current State
+Full social platform with: feed, chats, groups, search, music, videos, movies, radio, AI song generator, live TV, live streams, creator studio, published apps, members only, daily rewards, daily items secret, search engine (Pro-only), search engine store, shines (currency), help, settings, robux simulator, phone protection, what's new, what's next, games coming soon.
 
-**Planned changes:**
-- Update the group chat composer (GroupConversation) so the message input textbox uses a clearly blue visual style in group chats only, leaving direct-message composer styling unchanged.
-- Add group composer controls to choose message color/effect prior to sending, with plan-based availability:
-  - Free/Normal: Normal only (no effects beyond None)
-  - Pro: Black, Orange, Blue, Purple
-  - Ultra: adds Skulls and Flames effects
-  - Ultimate: adds Dodge effect
-- Show locked style options as visible-but-disabled, labeled with required plan (English), and display an English toast/message when a locked option is clicked.
-- Extend message styling end-to-end for group messages to support Blue and Purple colors and a lightweight Dodge effect (send/store/fetch/render), while keeping existing styles working.
-- Determine the user’s plan tier (Free/Pro/Ultra/Ultimate) from existing premium membership data where possible; if needed, add backend state to the Motoko UserProfile and expose a query for the frontend to read the tier.
-- Change group composer default selection behavior so group chats default to Blue and reset back to Blue after sending; direct-message defaults remain unchanged.
+Settings page has audio/voice settings only. No AI chatbot page. No Package Fixer page. No VIP trial section. No Google Play/Chrome badges. No NEW tags on settings. Login page exists.
 
-**User-visible outcome:** In group chats, the message box looks blue and users can pick message colors/effects before sending; higher-tier styles are shown as locked with plan labels and an explanatory message when tapped, and recipients see the selected Blue/Purple colors and Dodge effect on group messages.
+## Requested Changes (Diff)
+
+### Add
+- AI Chatbot page (AIChatbotPage.tsx): chat UI with AI assistant, inline calculator panel, simple recharts graph, voice input/output via Web Speech API, tool buttons (Math Solver, Unit Converter, Currency Converter). Mock intelligent responses. Nav label "AI Chatbot", Bot icon, yellow NEW badge.
+- Package Fixer AI page (PackageFixerPage.tsx): chat box, file upload (.zip/.json/.txt/.js/.ts etc), Fix File and Build File buttons with mock progress, download result button (creates mock result), "More tools coming soon" note. Nav label "Package Fixer AI", Wrench icon, yellow NEW badge.
+- VIP page (VIPPage.tsx): "Try VIP Free for 6 Days" card + "Pay for 7 Months" plan card. Nav label "VIP Membership", Crown icon, yellow NEW badge.
+- Google Play / Chrome coming soon badges: greyed-out store badge section in SettingsPage and WelcomePage.
+- NEW yellow tags on settings: add Notification Settings card, Privacy Settings card, Theme Preferences card to SettingsPage - each with yellow "NEW" badge next to title.
+- Multiple search engines in SearchEnginePage: tabs/selector for JAMESPaudio Search, Google, Bing, DuckDuckGo, YouTube. Show NEW badge on selector. External engines show disclaimer.
+- App Search tab in SearchPage: add "App Search" tab with demo apps list + filtering. Show NEW badge on App Search tab.
+- Login page branding: add logo/tagline area, "More sign-in options coming soon" text below form.
+
+### Modify
+- MainApp.tsx: add routes for ai-chatbot, package-fixer, vip pages. Add isNew flag to new nav items and render yellow NEW badge in NavContent.
+
+### Remove
+- Nothing.
+
+## Implementation Plan
+1. Update MainApp.tsx - add page types, imports, nav items with isNew flag, NEW badge rendering in NavContent
+2. Create AIChatbotPage.tsx
+3. Create PackageFixerPage.tsx
+4. Create VIPPage.tsx
+5. Update SettingsPage.tsx - add NEW-tagged setting cards + store badges
+6. Update SearchEnginePage.tsx - add engine selector with NEW badge
+7. Update SearchPage.tsx - add App Search tab with NEW badge
+8. Update LoginPage.tsx - improved branding
+9. Validate and fix all errors

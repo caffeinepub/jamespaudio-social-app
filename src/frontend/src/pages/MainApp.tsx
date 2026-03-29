@@ -3,6 +3,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   AppWindow,
+  Bot,
   Crown,
   Film,
   Gamepad2,
@@ -28,11 +29,13 @@ import {
   Users,
   Video,
   Wifi,
+  Wrench,
 } from "lucide-react";
 import { Menu } from "lucide-react";
 import { useState } from "react";
 import Header from "../components/Header";
 import { NavigationProvider } from "../contexts/NavigationContext";
+import AIChatbotPage from "./AIChatbotPage";
 import AISongGeneratorPage from "./AISongGeneratorPage";
 import ChatsPage from "./ChatsPage";
 import CreatorStudioPage from "./CreatorStudioPage";
@@ -47,6 +50,7 @@ import LiveTVPage from "./LiveTVPage";
 import MembersOnlyPage from "./MembersOnlyPage";
 import MoviesPage from "./MoviesPage";
 import MusicPage from "./MusicPage";
+import PackageFixerPage from "./PackageFixerPage";
 import PageUnavailablePage from "./PageUnavailablePage";
 import PhoneProtectionPage from "./PhoneProtectionPage";
 import ProfilePage from "./ProfilePage";
@@ -58,6 +62,7 @@ import SearchEngineStorePage from "./SearchEngineStorePage";
 import SearchPage from "./SearchPage";
 import SettingsPage from "./SettingsPage";
 import ShinesPage from "./ShinesPage";
+import VIPPage from "./VIPPage";
 import VideosPage from "./VideosPage";
 import WhatsNewPage from "./WhatsNewPage";
 import WhatsNextPage from "./WhatsNextPage";
@@ -90,56 +95,58 @@ type PageType =
   | "search-engine-store"
   | "page-unavailable"
   | "shines"
-  | "help";
+  | "help"
+  | "ai-chatbot"
+  | "package-fixer"
+  | "vip";
+
+interface NavItem {
+  id: PageType;
+  label: string;
+  icon: React.ElementType;
+  isNew?: boolean;
+}
 
 export default function MainApp() {
   const [activePage, setActivePage] = useState<PageType>("feed");
   const [targetGroupId, setTargetGroupId] = useState<string | null>(null);
 
-  const navigationItems = [
-    { id: "feed" as PageType, label: "Feed", icon: Home },
-    { id: "chats" as PageType, label: "Chats", icon: MessageCircle },
-    { id: "search" as PageType, label: "Search", icon: Search },
-    { id: "profile" as PageType, label: "Profile", icon: User },
-    { id: "shines" as PageType, label: "JAMESPaudio Shines", icon: Star },
-    { id: "music" as PageType, label: "Music", icon: Music },
-    { id: "ai-song" as PageType, label: "AI Song Generator", icon: Sparkles },
-    { id: "videos" as PageType, label: "Videos", icon: Video },
-    { id: "movies" as PageType, label: "Movies", icon: Film },
-    { id: "livetv" as PageType, label: "Live TV", icon: Tv },
-    { id: "live-streams" as PageType, label: "Live Streams", icon: Wifi },
-    { id: "radio" as PageType, label: "Radio", icon: Radio },
-    { id: "apps" as PageType, label: "Published Apps", icon: AppWindow },
-    { id: "creator" as PageType, label: "Creator Studio", icon: Palette },
-    { id: "groups" as PageType, label: "Groups", icon: Users },
-    { id: "members-only" as PageType, label: "Members Only", icon: Crown },
-    { id: "rewards" as PageType, label: "Daily Rewards", icon: Gift },
+  const navigationItems: NavItem[] = [
+    { id: "feed", label: "Feed", icon: Home },
+    { id: "chats", label: "Chats", icon: MessageCircle },
+    { id: "search", label: "Search", icon: Search },
+    { id: "profile", label: "Profile", icon: User },
+    { id: "shines", label: "JAMESPaudio Shines", icon: Star },
+    { id: "vip", label: "VIP Membership", icon: Crown, isNew: true },
+    { id: "ai-chatbot", label: "AI Chatbot", icon: Bot, isNew: true },
     {
-      id: "daily-items-secret" as PageType,
-      label: "Daily Items Secret",
-      icon: Package,
+      id: "package-fixer",
+      label: "Package Fixer AI",
+      icon: Wrench,
+      isNew: true,
     },
-    {
-      id: "search-engine" as PageType,
-      label: "Search Engine",
-      icon: SearchCode,
-    },
-    {
-      id: "search-engine-store" as PageType,
-      label: "Search Engine Store",
-      icon: Store,
-    },
-    { id: "whats-next" as PageType, label: "What's Next", icon: MapPin },
-    {
-      id: "games-coming" as PageType,
-      label: "Games Coming Soon",
-      icon: Gamepad2,
-    },
-    { id: "protection" as PageType, label: "Phone Protection", icon: Shield },
-    { id: "news" as PageType, label: "What's New", icon: Newspaper },
-    { id: "robux" as PageType, label: "Robux Simulator", icon: Star },
-    { id: "help" as PageType, label: "Help", icon: HelpCircle },
-    { id: "settings" as PageType, label: "Settings", icon: Settings },
+    { id: "music", label: "Music", icon: Music },
+    { id: "ai-song", label: "AI Song Generator", icon: Sparkles },
+    { id: "videos", label: "Videos", icon: Video },
+    { id: "movies", label: "Movies", icon: Film },
+    { id: "livetv", label: "Live TV", icon: Tv },
+    { id: "live-streams", label: "Live Streams", icon: Wifi },
+    { id: "radio", label: "Radio", icon: Radio },
+    { id: "apps", label: "Published Apps", icon: AppWindow },
+    { id: "creator", label: "Creator Studio", icon: Palette },
+    { id: "groups", label: "Groups", icon: Users },
+    { id: "members-only", label: "Members Only", icon: Crown },
+    { id: "rewards", label: "Daily Rewards", icon: Gift },
+    { id: "daily-items-secret", label: "Daily Items Secret", icon: Package },
+    { id: "search-engine", label: "Search Engine", icon: SearchCode },
+    { id: "search-engine-store", label: "Search Engine Store", icon: Store },
+    { id: "whats-next", label: "What's Next", icon: MapPin },
+    { id: "games-coming", label: "Games Coming Soon", icon: Gamepad2 },
+    { id: "protection", label: "Phone Protection", icon: Shield },
+    { id: "news", label: "What's New", icon: Newspaper },
+    { id: "robux", label: "Robux Simulator", icon: Star },
+    { id: "help", label: "Help", icon: HelpCircle },
+    { id: "settings", label: "Settings", icon: Settings },
   ];
 
   const renderPage = () => {
@@ -205,6 +212,12 @@ export default function MainApp() {
         return <HelpPage />;
       case "settings":
         return <SettingsPage />;
+      case "ai-chatbot":
+        return <AIChatbotPage />;
+      case "package-fixer":
+        return <PackageFixerPage />;
+      case "vip":
+        return <VIPPage />;
       case "page-unavailable":
         return <PageUnavailablePage />;
       default:
@@ -227,11 +240,19 @@ export default function MainApp() {
                 item.id === "shines" ? "text-yellow-400 font-semibold" : ""
               }`}
               onClick={() => setActivePage(item.id)}
+              data-ocid={`nav.${item.id}.link`}
             >
               <Icon
-                className={`h-5 w-5 ${item.id === "shines" ? "text-yellow-400" : ""}`}
+                className={`h-5 w-5 flex-shrink-0 ${
+                  item.id === "shines" ? "text-yellow-400" : ""
+                }`}
               />
-              <span>{item.label}</span>
+              <span className="flex-1 text-left">{item.label}</span>
+              {item.isNew && (
+                <span className="text-[10px] font-bold bg-yellow-400 text-yellow-900 rounded-full px-1.5 py-0.5 leading-none">
+                  NEW
+                </span>
+              )}
             </Button>
           );
         })}
