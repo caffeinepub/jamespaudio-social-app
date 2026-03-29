@@ -1,9 +1,15 @@
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Gamepad2, Sparkles, Trophy, Users, Zap } from 'lucide-react';
-import { useGetUpcomingGames } from '../hooks/useQueries';
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Gamepad2, Sparkles, Trophy, Users, Zap } from "lucide-react";
+import { useGetUpcomingGames } from "../hooks/useQueries";
 
 export default function GamesComingSoonPage() {
   const { data: upcomingGames, isLoading } = useGetUpcomingGames();
@@ -12,7 +18,7 @@ export default function GamesComingSoonPage() {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
           <p className="text-muted-foreground">Loading games...</p>
         </div>
       </div>
@@ -47,10 +53,15 @@ export default function GamesComingSoonPage() {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent flex items-end">
             <div className="p-8 w-full">
-              <Badge className="mb-4 bg-purple-500 text-white">Coming Soon</Badge>
-              <h2 className="text-3xl font-bold mb-2">Gaming Platform Launch</h2>
+              <Badge className="mb-4 bg-purple-500 text-white">
+                Coming Soon
+              </Badge>
+              <h2 className="text-3xl font-bold mb-2">
+                Gaming Platform Launch
+              </h2>
               <p className="text-muted-foreground max-w-2xl">
-                Play, compete, and connect with friends through our upcoming gaming platform. Multiple genres, achievements, and more!
+                Play, compete, and connect with friends through our upcoming
+                gaming platform. Multiple genres, achievements, and more!
               </p>
             </div>
           </div>
@@ -63,7 +74,8 @@ export default function GamesComingSoonPage() {
               <Trophy className="h-10 w-10 text-yellow-500 mb-2" />
               <CardTitle>Achievements</CardTitle>
               <CardDescription>
-                Earn badges and trophies as you complete challenges and reach milestones
+                Earn badges and trophies as you complete challenges and reach
+                milestones
               </CardDescription>
             </CardHeader>
           </Card>
@@ -72,7 +84,8 @@ export default function GamesComingSoonPage() {
               <Users className="h-10 w-10 text-pink-500 mb-2" />
               <CardTitle>Multiplayer</CardTitle>
               <CardDescription>
-                Challenge your friends and compete in real-time multiplayer matches
+                Challenge your friends and compete in real-time multiplayer
+                matches
               </CardDescription>
             </CardHeader>
           </Card>
@@ -96,14 +109,19 @@ export default function GamesComingSoonPage() {
 
           {upcomingGames && upcomingGames.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {upcomingGames.map((game, index) => (
-                <Card key={index} className="hover:shadow-lg transition-shadow border-primary/30">
+              {upcomingGames.map((game) => (
+                <Card
+                  key={game.title}
+                  className="hover:shadow-lg transition-shadow border-primary/30"
+                >
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <CardTitle className="text-lg">{game.title}</CardTitle>
                       <Badge variant="outline">{game.genre}</Badge>
                     </div>
-                    <CardDescription className="mt-2">{game.description}</CardDescription>
+                    <CardDescription className="mt-2">
+                      {game.description}
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <Button variant="outline" className="w-full" disabled>
@@ -117,20 +135,50 @@ export default function GamesComingSoonPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {[
-                { title: 'Puzzle Master', genre: 'Puzzle', description: 'Challenge your mind with brain-teasing puzzles' },
-                { title: 'Speed Racer', genre: 'Racing', description: 'Race against friends in high-speed competitions' },
-                { title: 'Word Quest', genre: 'Word', description: 'Expand your vocabulary in this word adventure' },
-                { title: 'Strategy Wars', genre: 'Strategy', description: 'Build your empire and conquer opponents' },
-                { title: 'Rhythm Beat', genre: 'Music', description: 'Feel the beat and hit the perfect notes' },
-                { title: 'Trivia Challenge', genre: 'Trivia', description: 'Test your knowledge across various topics' },
-              ].map((game, index) => (
-                <Card key={index} className="hover:shadow-lg transition-shadow">
+                {
+                  title: "Puzzle Master",
+                  genre: "Puzzle",
+                  description: "Challenge your mind with brain-teasing puzzles",
+                },
+                {
+                  title: "Speed Racer",
+                  genre: "Racing",
+                  description:
+                    "Race against friends in high-speed competitions",
+                },
+                {
+                  title: "Word Quest",
+                  genre: "Word",
+                  description: "Expand your vocabulary in this word adventure",
+                },
+                {
+                  title: "Strategy Wars",
+                  genre: "Strategy",
+                  description: "Build your empire and conquer opponents",
+                },
+                {
+                  title: "Rhythm Beat",
+                  genre: "Music",
+                  description: "Feel the beat and hit the perfect notes",
+                },
+                {
+                  title: "Trivia Challenge",
+                  genre: "Trivia",
+                  description: "Test your knowledge across various topics",
+                },
+              ].map((game) => (
+                <Card
+                  key={game.title}
+                  className="hover:shadow-lg transition-shadow"
+                >
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <CardTitle className="text-lg">{game.title}</CardTitle>
                       <Badge variant="outline">{game.genre}</Badge>
                     </div>
-                    <CardDescription className="mt-2">{game.description}</CardDescription>
+                    <CardDescription className="mt-2">
+                      {game.description}
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <Button variant="outline" className="w-full" disabled>
@@ -150,9 +198,13 @@ export default function GamesComingSoonPage() {
             <Gamepad2 className="h-16 w-16 text-primary mx-auto mb-4" />
             <h3 className="text-2xl font-bold mb-2">Stay Tuned!</h3>
             <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-              We're working hard to bring you the best gaming experience. Follow us for updates and be the first to know when games launch!
+              We're working hard to bring you the best gaming experience. Follow
+              us for updates and be the first to know when games launch!
             </p>
-            <Button size="lg" className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
+            <Button
+              size="lg"
+              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+            >
               <Sparkles className="h-5 w-5 mr-2" />
               Get Notified
             </Button>
@@ -161,7 +213,17 @@ export default function GamesComingSoonPage() {
 
         {/* Footer */}
         <div className="text-center py-8 text-sm text-muted-foreground">
-          <p>© 2025. Built with love using <a href="https://caffeine.ai" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">caffeine.ai</a></p>
+          <p>
+            © 2025. Built with love using{" "}
+            <a
+              href="https://caffeine.ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              caffeine.ai
+            </a>
+          </p>
         </div>
       </div>
     </ScrollArea>

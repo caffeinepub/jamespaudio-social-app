@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from "react";
 
 interface VoiceSettings {
   enabled: boolean;
@@ -7,10 +7,10 @@ interface VoiceSettings {
   muted: boolean;
 }
 
-const VOICE_ENABLED_KEY = 'aiVoiceEnabled';
-const VOICE_VOLUME_KEY = 'aiVoiceVolume';
-const VOICE_MUTED_KEY = 'aiVoiceMuted';
-const VOICE_SETTINGS_CHANGE_EVENT = 'voiceSettingsChange';
+const VOICE_ENABLED_KEY = "aiVoiceEnabled";
+const VOICE_VOLUME_KEY = "aiVoiceVolume";
+const VOICE_MUTED_KEY = "aiVoiceMuted";
+const VOICE_SETTINGS_CHANGE_EVENT = "voiceSettingsChange";
 
 export function useVoiceSettings(): VoiceSettings {
   const [enabled, setEnabled] = useState(() => {
@@ -20,7 +20,7 @@ export function useVoiceSettings(): VoiceSettings {
 
   const [volume, setVolume] = useState(() => {
     const saved = localStorage.getItem(VOICE_VOLUME_KEY);
-    return saved ? parseInt(saved) : 100; // Default to 100%
+    return saved ? Number.parseInt(saved) : 100; // Default to 100%
   });
 
   const [muted, setMuted] = useState(() => {
@@ -34,12 +34,12 @@ export function useVoiceSettings(): VoiceSettings {
       const savedEnabled = localStorage.getItem(VOICE_ENABLED_KEY);
       const savedVolume = localStorage.getItem(VOICE_VOLUME_KEY);
       const savedMuted = localStorage.getItem(VOICE_MUTED_KEY);
-      
+
       if (savedEnabled !== null) {
         setEnabled(JSON.parse(savedEnabled));
       }
       if (savedVolume !== null) {
-        setVolume(parseInt(savedVolume));
+        setVolume(Number.parseInt(savedVolume));
       }
       if (savedMuted !== null) {
         setMuted(JSON.parse(savedMuted));
@@ -52,7 +52,7 @@ export function useVoiceSettings(): VoiceSettings {
         setEnabled(JSON.parse(e.newValue));
       }
       if (e.key === VOICE_VOLUME_KEY && e.newValue !== null) {
-        setVolume(parseInt(e.newValue));
+        setVolume(Number.parseInt(e.newValue));
       }
       if (e.key === VOICE_MUTED_KEY && e.newValue !== null) {
         setMuted(JSON.parse(e.newValue));
@@ -60,11 +60,14 @@ export function useVoiceSettings(): VoiceSettings {
     };
 
     window.addEventListener(VOICE_SETTINGS_CHANGE_EVENT, handleSameTabChange);
-    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener("storage", handleStorageChange);
 
     return () => {
-      window.removeEventListener(VOICE_SETTINGS_CHANGE_EVENT, handleSameTabChange);
-      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener(
+        VOICE_SETTINGS_CHANGE_EVENT,
+        handleSameTabChange,
+      );
+      window.removeEventListener("storage", handleStorageChange);
     };
   }, []);
 

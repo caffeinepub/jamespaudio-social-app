@@ -1,8 +1,8 @@
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useGetProfile } from '../hooks/useQueries';
-import type { FeedItem as FeedItemType } from '../types/temporary';
-import { formatDistanceToNow } from 'date-fns';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { formatDistanceToNow } from "date-fns";
+import { useGetProfile } from "../hooks/useQueries";
+import type { FeedItem as FeedItemType } from "../types/temporary";
 
 interface FeedItemProps {
   item: FeedItemType;
@@ -13,9 +13,9 @@ export default function FeedItem({ item }: FeedItemProps) {
 
   const getInitials = (name: string) => {
     return name
-      .split(' ')
+      .split(" ")
       .map((n) => n[0])
-      .join('')
+      .join("")
       .toUpperCase()
       .slice(0, 2);
   };
@@ -34,7 +34,9 @@ export default function FeedItem({ item }: FeedItemProps) {
         </Avatar>
         <div className="flex-1">
           <p className="font-semibold">{item.username}</p>
-          <p className="text-sm text-muted-foreground">{formatTimestamp(item.timestamp)}</p>
+          <p className="text-sm text-muted-foreground">
+            {formatTimestamp(item.timestamp)}
+          </p>
         </div>
       </CardHeader>
       {item.status && (

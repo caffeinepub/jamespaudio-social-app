@@ -1,18 +1,32 @@
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Store, Check, Clock, Search } from 'lucide-react';
-import { useGetAvailableSearchEngines, useGetDefaultSearchEngine, useSetDefaultSearchEngine, useGetSearchHistory } from '../hooks/useQueries';
-import { useInternetIdentity } from '../hooks/useInternetIdentity';
-import { toast } from 'sonner';
-import { useState } from 'react';
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Check, Clock, Search, Store } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { useInternetIdentity } from "../hooks/useInternetIdentity";
+import {
+  useGetAvailableSearchEngines,
+  useGetDefaultSearchEngine,
+  useGetSearchHistory,
+  useSetDefaultSearchEngine,
+} from "../hooks/useQueries";
 
 export default function SearchEngineStorePage() {
   const { identity } = useInternetIdentity();
-  const { data: searchEngines, isLoading: enginesLoading } = useGetAvailableSearchEngines();
-  const { data: defaultEngine, isLoading: defaultLoading } = useGetDefaultSearchEngine();
-  const { data: searchHistory, isLoading: historyLoading } = useGetSearchHistory();
+  const { data: searchEngines, isLoading: enginesLoading } =
+    useGetAvailableSearchEngines();
+  const { data: defaultEngine, isLoading: _defaultLoading } =
+    useGetDefaultSearchEngine();
+  const { data: searchHistory, isLoading: historyLoading } =
+    useGetSearchHistory();
   const setDefaultEngine = useSetDefaultSearchEngine();
   const [selectedEngine, setSelectedEngine] = useState<string | null>(null);
 
@@ -20,20 +34,20 @@ export default function SearchEngineStorePage() {
 
   const handleSetDefault = async (engineId: string) => {
     if (!isAuthenticated) {
-      toast.error('Please sign in to set your default search engine');
+      toast.error("Please sign in to set your default search engine");
       return;
     }
 
     try {
       setSelectedEngine(engineId);
       await setDefaultEngine.mutateAsync(engineId);
-      toast.success('Default search engine updated successfully!');
+      toast.success("Default search engine updated successfully!");
     } catch (error: any) {
-      console.error('Error setting default engine:', error);
-      if (error.message?.includes('Unauthorized')) {
-        toast.error('Please sign in to set your default search engine');
+      console.error("Error setting default engine:", error);
+      if (error.message?.includes("Unauthorized")) {
+        toast.error("Please sign in to set your default search engine");
       } else {
-        toast.error('Failed to update search engine. Please try again.');
+        toast.error("Failed to update search engine. Please try again.");
       }
     } finally {
       setSelectedEngine(null);
@@ -58,7 +72,8 @@ export default function SearchEngineStorePage() {
           </div>
           <h1 className="text-4xl font-bold">Search Engine Store</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Browse and select your preferred search provider for the best search experience
+            Browse and select your preferred search provider for the best search
+            experience
           </p>
         </div>
 
@@ -66,9 +81,12 @@ export default function SearchEngineStorePage() {
         {!isAuthenticated && (
           <Card className="border-orange-500/50 bg-orange-500/5">
             <CardContent className="py-6 text-center">
-              <p className="text-lg font-semibold mb-2">Sign in to customize your search experience</p>
+              <p className="text-lg font-semibold mb-2">
+                Sign in to customize your search experience
+              </p>
               <p className="text-sm text-muted-foreground">
-                You can browse available search engines, but you'll need to sign in to set your default provider and view search history.
+                You can browse available search engines, but you'll need to sign
+                in to set your default provider and view search history.
               </p>
             </CardContent>
           </Card>
@@ -83,7 +101,7 @@ export default function SearchEngineStorePage() {
 
           {enginesLoading ? (
             <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
               <p className="text-muted-foreground">Loading search engines...</p>
             </div>
           ) : searchEngines && searchEngines.length > 0 ? (
@@ -93,7 +111,10 @@ export default function SearchEngineStorePage() {
                 const isSelecting = selectedEngine === engine.id;
 
                 return (
-                  <Card key={engine.id} className={`transition-all ${isDefault ? 'border-primary bg-primary/5' : ''}`}>
+                  <Card
+                    key={engine.id}
+                    className={`transition-all ${isDefault ? "border-primary bg-primary/5" : ""}`}
+                  >
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
@@ -106,26 +127,33 @@ export default function SearchEngineStorePage() {
                               </Badge>
                             )}
                           </CardTitle>
-                          <CardDescription className="mt-2">{engine.description}</CardDescription>
+                          <CardDescription className="mt-2">
+                            {engine.description}
+                          </CardDescription>
                         </div>
                       </div>
                     </CardHeader>
                     <CardContent>
                       <Button
                         onClick={() => handleSetDefault(engine.id)}
-                        disabled={isDefault || isSelecting || !isAuthenticated || setDefaultEngine.isPending}
+                        disabled={
+                          isDefault ||
+                          isSelecting ||
+                          !isAuthenticated ||
+                          setDefaultEngine.isPending
+                        }
                         className="w-full"
-                        variant={isDefault ? 'secondary' : 'default'}
+                        variant={isDefault ? "secondary" : "default"}
                       >
                         {isSelecting ? (
                           <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
                             Setting...
                           </>
                         ) : isDefault ? (
-                          'Current Default'
+                          "Current Default"
                         ) : (
-                          'Set as Default'
+                          "Set as Default"
                         )}
                       </Button>
                     </CardContent>
@@ -137,7 +165,9 @@ export default function SearchEngineStorePage() {
             <Card>
               <CardContent className="py-12 text-center">
                 <Store className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">No search engines available</p>
+                <p className="text-muted-foreground">
+                  No search engines available
+                </p>
               </CardContent>
             </Card>
           )}
@@ -153,18 +183,25 @@ export default function SearchEngineStorePage() {
 
             {historyLoading ? (
               <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                <p className="text-sm text-muted-foreground">Loading history...</p>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
+                <p className="text-sm text-muted-foreground">
+                  Loading history...
+                </p>
               </div>
             ) : searchHistory && searchHistory.length > 0 ? (
               <Card>
                 <CardContent className="p-0">
                   <div className="divide-y">
-                    {searchHistory.map((entry, index) => (
-                      <div key={index} className="p-4 hover:bg-muted/50 transition-colors">
+                    {searchHistory.map((entry) => (
+                      <div
+                        key={entry.searchTerm + String(entry.timestamp)}
+                        className="p-4 hover:bg-muted/50 transition-colors"
+                      >
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium truncate">{entry.searchTerm}</p>
+                            <p className="font-medium truncate">
+                              {entry.searchTerm}
+                            </p>
                             <div className="flex items-center gap-2 mt-1">
                               <Badge variant="outline" className="text-xs">
                                 {entry.searchType}
@@ -187,7 +224,8 @@ export default function SearchEngineStorePage() {
                   <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <p className="text-muted-foreground">No search history yet</p>
                   <p className="text-sm text-muted-foreground mt-2">
-                    Your searches will appear here once you start using the search engine
+                    Your searches will appear here once you start using the
+                    search engine
                   </p>
                 </CardContent>
               </Card>
@@ -197,7 +235,17 @@ export default function SearchEngineStorePage() {
 
         {/* Footer */}
         <div className="text-center py-8 text-sm text-muted-foreground">
-          <p>© 2026. Built with love using <a href="https://caffeine.ai" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">caffeine.ai</a></p>
+          <p>
+            © 2026. Built with love using{" "}
+            <a
+              href="https://caffeine.ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              caffeine.ai
+            </a>
+          </p>
         </div>
       </div>
     </ScrollArea>

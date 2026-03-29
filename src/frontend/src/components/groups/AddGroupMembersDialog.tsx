@@ -1,14 +1,20 @@
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Search, UserPlus, Loader2 } from 'lucide-react';
-import { useSearchProfiles, useAddGroupMember } from '../../hooks/useQueries';
-import { Principal } from '@dfinity/principal';
-import type { GroupId } from '../../backend';
-import { toast } from 'sonner';
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import type { Principal } from "@dfinity/principal";
+import { Loader2, Search, UserPlus } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import type { GroupId } from "../../backend";
+import { useAddGroupMember, useSearchProfiles } from "../../hooks/useQueries";
 
 interface AddGroupMembersDialogProps {
   open: boolean;
@@ -25,32 +31,36 @@ export default function AddGroupMembersDialog({
   existingMemberIds,
   onMemberAdded,
 }: AddGroupMembersDialogProps) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const { data: searchResults, isLoading: isSearching } = useSearchProfiles(searchTerm);
+  const [searchTerm, setSearchTerm] = useState("");
+  const { data: searchResults, isLoading: isSearching } =
+    useSearchProfiles(searchTerm);
   const addMember = useAddGroupMember();
 
   const handleAddMember = async (userId: Principal, username: string) => {
     try {
       await addMember.mutateAsync({ groupId, userId });
-      toast.success(`${username} added to the group — you can start chatting now!`);
+      toast.success(
+        `${username} added to the group — you can start chatting now!`,
+      );
       onMemberAdded?.();
     } catch (error: any) {
-      console.error('Error adding member:', error);
-      if (error.message?.includes('already a member')) {
+      console.error("Error adding member:", error);
+      if (error.message?.includes("already a member")) {
         toast.error(`${username} is already a member of this group`);
-      } else if (error.message?.includes('Unauthorized')) {
-        toast.error('You do not have permission to add members to this group');
-      } else if (error.message?.includes('not found')) {
-        toast.error('Group not found');
+      } else if (error.message?.includes("Unauthorized")) {
+        toast.error("You do not have permission to add members to this group");
+      } else if (error.message?.includes("not found")) {
+        toast.error("Group not found");
       } else {
-        toast.error('Failed to add member. Please try again.');
+        toast.error("Failed to add member. Please try again.");
       }
     }
   };
 
-  const filteredResults = searchResults?.filter(
-    (result) => !existingMemberIds.includes(result.userId.toString())
-  ) || [];
+  const filteredResults =
+    searchResults?.filter(
+      (result) => !existingMemberIds.includes(result.userId.toString()),
+    ) || [];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -78,7 +88,7 @@ export default function AddGroupMembersDialog({
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
               </div>
-            ) : searchTerm.trim() === '' ? (
+            ) : searchTerm.trim() === "" ? (
               <div className="flex flex-col items-center justify-center py-12 text-center px-4">
                 <Search className="h-12 w-12 text-muted-foreground mb-3" />
                 <p className="text-sm text-muted-foreground">
@@ -89,15 +99,15 @@ export default function AddGroupMembersDialog({
               <div className="flex flex-col items-center justify-center py-12 text-center px-4">
                 <p className="text-sm text-muted-foreground">
                   {searchResults && searchResults.length > 0
-                    ? 'All matching users are already members'
-                    : 'No users found'}
+                    ? "All matching users are already members"
+                    : "No users found"}
                 </p>
               </div>
             ) : (
               <div className="p-2 space-y-2">
                 {filteredResults.map((result) => {
                   const isAdding = addMember.isPending;
-                  
+
                   return (
                     <div
                       key={result.userId.toString()}
@@ -110,7 +120,9 @@ export default function AddGroupMembersDialog({
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">{result.username}</p>
+                          <p className="font-medium truncate">
+                            {result.username}
+                          </p>
                           {result.bio && (
                             <p className="text-xs text-muted-foreground truncate">
                               {result.bio}
@@ -120,7 +132,9 @@ export default function AddGroupMembersDialog({
                       </div>
                       <Button
                         size="sm"
-                        onClick={() => handleAddMember(result.userId, result.username)}
+                        onClick={() =>
+                          handleAddMember(result.userId, result.username)
+                        }
                         disabled={isAdding}
                         className="flex-shrink-0 ml-2"
                       >

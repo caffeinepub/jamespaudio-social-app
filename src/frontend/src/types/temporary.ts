@@ -1,7 +1,7 @@
 // Temporary type definitions for features not yet implemented in backend
 // These should be removed once the backend is fully implemented
 
-import type { Principal } from '@dfinity/principal';
+import type { Principal } from "@dfinity/principal";
 
 export type UserId = Principal;
 export type Timestamp = bigint;
@@ -65,8 +65,8 @@ export interface UpcomingGame {
 }
 
 export enum FeatureStatus {
-  planned = 'planned',
-  inProgress = 'inProgress',
-  testing = 'testing',
-  released = 'released',
+  planned = "planned",
+  inProgress = "inProgress",
+  testing = "testing",
+  released = "released",
 }

@@ -1,11 +1,11 @@
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
-import { useNavigate } from '@tanstack/react-router';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useNavigate } from "@tanstack/react-router";
+import { AlertTriangle, Home, RefreshCw } from "lucide-react";
 
 export default function PageUnavailablePage() {
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
 
   const handleGoHome = () => {
     // In the context of MainApp, we can't use navigate
@@ -38,7 +38,8 @@ export default function PageUnavailablePage() {
 
             <div className="space-y-4 max-w-md mx-auto">
               <p className="text-muted-foreground">
-                The page you're looking for might have been removed, had its name changed, or is temporarily unavailable.
+                The page you're looking for might have been removed, had its
+                name changed, or is temporarily unavailable.
               </p>
               <p className="text-sm text-muted-foreground">
                 This could happen if:
@@ -56,7 +57,11 @@ export default function PageUnavailablePage() {
                 <Home className="h-5 w-5 mr-2" />
                 Go to Home
               </Button>
-              <Button onClick={() => window.location.reload()} variant="outline" size="lg">
+              <Button
+                onClick={() => window.location.reload()}
+                variant="outline"
+                size="lg"
+              >
                 <RefreshCw className="h-5 w-5 mr-2" />
                 Refresh Page
               </Button>
@@ -71,7 +76,17 @@ export default function PageUnavailablePage() {
 
       {/* Footer */}
       <div className="text-center py-8 text-sm text-muted-foreground">
-        <p>© 2025. Built with love using <a href="https://caffeine.ai" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">caffeine.ai</a></p>
+        <p>
+          © 2025. Built with love using{" "}
+          <a
+            href="https://caffeine.ai"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline"
+          >
+            caffeine.ai
+          </a>
+        </p>
       </div>
     </ScrollArea>
   );

@@ -16,27 +16,7 @@ export interface Badge {
   'description' : string,
   'earnedAt' : Timestamp,
 }
-export interface DailyMysteryItemData {
-  'id' : string,
-  'userId' : UserId,
-  'lastDailyItemClaim' : [] | [Timestamp],
-  'newDailyItemResult' : [] | [MysteryItem],
-  'dailyItemBoxOpened' : boolean,
-}
-export interface DirectMessage {
-  'id' : MessageId,
-  'content' : string,
-  'sender' : UserId,
-  'timestamp' : Timestamp,
-  'receiver' : UserId,
-}
 export type ExternalBlob = Uint8Array;
-export interface FeedItem {
-  'status' : Status,
-  'username' : string,
-  'userId' : UserId,
-  'timestamp' : Timestamp,
-}
 export interface Group {
   'id' : GroupId,
   'members' : Array<UserId>,
@@ -50,6 +30,8 @@ export interface GroupMessage {
   'id' : string,
   'content' : string,
   'mediaAttachment' : [] | [MediaAttachment],
+  'color' : MessageColor,
+  'effect' : MessageEffect,
   'sender' : UserId,
   'groupId' : GroupId,
   'timestamp' : Timestamp,
@@ -61,7 +43,23 @@ export interface MediaAttachment {
     { 'video' : null } |
     { 'image' : null },
 }
-export type MessageId = bigint;
+export type MembershipTier = { 'pro' : null } |
+  { 'free' : null } |
+  { 'ultra' : null } |
+  { 'ultimate' : null };
+export type MessageColor = { 'normal' : null } |
+  { 'blue' : null } |
+  { 'cyan' : null } |
+  { 'orange' : null } |
+  { 'purple' : null } |
+  { 'black' : null };
+export type MessageEffect = { 'fiery' : null } |
+  { 'none' : null } |
+  { 'skull' : null } |
+  { 'animated' : null } |
+  { 'spooky' : null } |
+  { 'devil' : null } |
+  { 'dodge' : null };
 export interface MusicUpload {
   'id' : string,
   'title' : string,
@@ -70,54 +68,6 @@ export interface MusicUpload {
   'artist' : string,
   'uploadTime' : Timestamp,
   'uploadedBy' : UserId,
-}
-export interface MysteryItem {
-  'id' : string,
-  'visualUrl' : [] | [string],
-  'name' : string,
-  'description' : string,
-  'rewardCooldown' : [] | [bigint],
-  'itemType' : MysteryItemType,
-  'pointsReward' : [] | [bigint],
-}
-export type MysteryItemType = { 'message' : null } |
-  { 'badge' : null } |
-  { 'visual' : null } |
-  { 'points' : null };
-export interface PointsStoreItem {
-  'id' : string,
-  'name' : string,
-  'createdAt' : Timestamp,
-  'description' : string,
-  'price' : bigint,
-}
-export interface PointsTransaction {
-  'id' : string,
-  'transactionType' : TransactionType,
-  'userId' : UserId,
-  'description' : string,
-  'timestamp' : Timestamp,
-  'amount' : bigint,
-}
-export interface SearchEngine {
-  'id' : string,
-  'name' : string,
-  'description' : string,
-  'apiUrl' : string,
-}
-export interface SearchHistoryEntry {
-  'userId' : UserId,
-  'searchTerm' : string,
-  'searchType' : string,
-  'timestamp' : Timestamp,
-}
-export interface SearchResult {
-  'bio' : string,
-  'username' : string,
-  'userId' : UserId,
-  'followerCount' : bigint,
-  'followingCount' : bigint,
-  'profilePicture' : { 'url' : string, 'contentType' : string },
 }
 export interface ShoppingItem {
   'productName' : string,
@@ -136,9 +86,6 @@ export type StripeSessionStatus = {
   } |
   { 'failed' : { 'error' : string } };
 export type Timestamp = bigint;
-export type TransactionType = { 'earn' : null } |
-  { 'spend' : null } |
-  { 'purchase' : null };
 export interface TransformationInput {
   'context' : Uint8Array,
   'response' : http_request_result,
@@ -167,6 +114,7 @@ export interface UserProfile {
   'followers' : Array<UserId>,
   'following' : Array<UserId>,
   'profilePicture' : { 'url' : string, 'contentType' : string },
+  'membershipTier' : MembershipTier,
   'isPremiumMember' : boolean,
   'points' : bigint,
   'musicUploads' : Array<MusicUpload>,
@@ -208,81 +156,35 @@ export interface _SERVICE {
   >,
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
-  'activateFreeTrial' : ActorMethod<[], undefined>,
   'addGroupMember' : ActorMethod<[GroupId, UserId], undefined>,
-  'addMysteryItem' : ActorMethod<[MysteryItem], undefined>,
-  'addStoreItem' : ActorMethod<[PointsStoreItem], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
-  'checkPointsEligibility' : ActorMethod<[bigint], string>,
-  'claimDailyItemsSecret' : ActorMethod<[], [] | [MysteryItem]>,
-  'claimDailyReward' : ActorMethod<[], string>,
   'createCheckoutSession' : ActorMethod<
     [Array<ShoppingItem>, string, string],
     string
   >,
   'createGroup' : ActorMethod<[string, string], GroupId>,
-  'createProfile' : ActorMethod<[string, string], undefined>,
-  'deleteMysteryItem' : ActorMethod<[string], undefined>,
-  'deleteStoreItem' : ActorMethod<[string], undefined>,
-  'getAllMysteryItems' : ActorMethod<[], Array<MysteryItem>>,
-  'getAllProfiles' : ActorMethod<[], Array<UserProfile>>,
-  'getAvailableSearchEngines' : ActorMethod<[], Array<SearchEngine>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
-  'getDefaultSearchEngine' : ActorMethod<[], string>,
-  'getDirectMessagePartners' : ActorMethod<[], Array<Principal>>,
-  'getDirectMessages' : ActorMethod<[Principal], Array<DirectMessage>>,
-  'getFriendsMusicUploads' : ActorMethod<[UserId], Array<MusicUpload>>,
   'getGroup' : ActorMethod<[GroupId], [] | [Group]>,
   'getGroupMessages' : ActorMethod<[GroupId], Array<GroupMessage>>,
-  'getLastClaimedMysteryItem' : ActorMethod<[UserId], [] | [MysteryItem]>,
-  'getLastOnline' : ActorMethod<[UserId], Timestamp>,
-  'getLastOnlineForMultipleUsers' : ActorMethod<
-    [Array<UserId>],
-    Array<[UserId, Timestamp]>
-  >,
-  'getPointsBalance' : ActorMethod<[], bigint>,
-  'getPointsHistory' : ActorMethod<[], Array<PointsTransaction>>,
-  'getProfile' : ActorMethod<[UserId], UserProfile>,
-  'getRecentStatuses' : ActorMethod<[bigint], Array<FeedItem>>,
-  'getSearchHistory' : ActorMethod<[], Array<SearchHistoryEntry>>,
-  'getStoreItems' : ActorMethod<[], Array<PointsStoreItem>>,
+  'getMembershipTier' : ActorMethod<[UserId], MembershipTier>,
   'getStripeSessionStatus' : ActorMethod<[string], StripeSessionStatus>,
   'getUserGroups' : ActorMethod<[], Array<Group>>,
-  'getUserMysteryItems' : ActorMethod<[UserId], Array<DailyMysteryItemData>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
-  'isMysteryItemClaimAvailable' : ActorMethod<[UserId], boolean>,
   'isStripeConfigured' : ActorMethod<[], boolean>,
-  'purchasePoints' : ActorMethod<[bigint], string>,
-  'purchaseStoreItem' : ActorMethod<[string], string>,
-  'recordSearchHistory' : ActorMethod<[string, string], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
-  'searchProfiles' : ActorMethod<[string], Array<SearchResult>>,
-  'sendDirectMessage' : ActorMethod<[Principal, string], undefined>,
   'sendGroupMessage' : ActorMethod<
+    [GroupId, string, [] | [MediaAttachment], MessageColor, MessageEffect],
+    undefined
+  >,
+  'sendGroupMessageLegacy' : ActorMethod<
     [GroupId, string, [] | [MediaAttachment]],
     undefined
   >,
-  'setDefaultSearchEngine' : ActorMethod<[string], undefined>,
+  'setMembershipTier' : ActorMethod<[UserId, MembershipTier], undefined>,
   'setStripeConfiguration' : ActorMethod<[StripeConfiguration], undefined>,
-  'spendPoints' : ActorMethod<[bigint], string>,
   'transform' : ActorMethod<[TransformationInput], TransformationOutput>,
-  'updateLastOnline' : ActorMethod<[], undefined>,
-  'updateMysteryItem' : ActorMethod<
-    [string, string, string, [] | [bigint], [] | [string], [] | [bigint]],
-    undefined
-  >,
-  'updateProfile' : ActorMethod<
-    [string, { 'url' : string, 'contentType' : string }],
-    undefined
-  >,
-  'updateStoreItem' : ActorMethod<[string, string, string, bigint], undefined>,
-  'upgradeToPremium' : ActorMethod<[bigint], undefined>,
-  'uploadMusic' : ActorMethod<
-    [string, string, string, string, ExternalBlob],
-    undefined
-  >,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

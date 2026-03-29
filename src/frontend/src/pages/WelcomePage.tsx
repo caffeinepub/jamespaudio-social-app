@@ -1,6 +1,15 @@
-import { Button } from '@/components/ui/button';
-import { useInternetIdentity } from '../hooks/useInternetIdentity';
-import { MessageCircle, Users, Search, Sparkles, Music, Video, Film, Radio } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import {
+  Film,
+  MessageCircle,
+  Music,
+  Radio,
+  Search,
+  Sparkles,
+  Users,
+  Video,
+} from "lucide-react";
+import { useInternetIdentity } from "../hooks/useInternetIdentity";
 
 export default function WelcomePage() {
   const { login, isLoggingIn } = useInternetIdentity();
@@ -10,13 +19,17 @@ export default function WelcomePage() {
       <header className="border-b border-border/40 bg-background/80 backdrop-blur-sm">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-3">
-            <img src="/assets/generated/jamesppaudio-logo-transparent.dim_200x200.png" alt="JAMESPaudio" className="h-10 w-10" />
+            <img
+              src="/assets/generated/jamesppaudio-logo-transparent.dim_200x200.png"
+              alt="JAMESPaudio"
+              className="h-10 w-10"
+            />
             <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               JAMESPaudio
             </span>
           </div>
           <Button onClick={login} disabled={isLoggingIn} size="lg">
-            {isLoggingIn ? 'Connecting...' : 'Login'}
+            {isLoggingIn ? "Connecting..." : "Login"}
           </Button>
         </div>
       </header>
@@ -29,7 +42,8 @@ export default function WelcomePage() {
                 Your Creative Social Hub
               </h1>
               <p className="text-xl text-muted-foreground">
-                Connect, create, and share. Music, videos, apps, and more - all in one decentralized platform on the Internet Computer.
+                Connect, create, and share. Music, videos, apps, and more - all
+                in one decentralized platform on the Internet Computer.
               </p>
             </div>
 
@@ -66,8 +80,13 @@ export default function WelcomePage() {
               />
             </div>
 
-            <Button onClick={login} disabled={isLoggingIn} size="lg" className="w-full sm:w-auto">
-              {isLoggingIn ? 'Connecting...' : 'Get Started'}
+            <Button
+              onClick={login}
+              disabled={isLoggingIn}
+              size="lg"
+              className="w-full sm:w-auto"
+            >
+              {isLoggingIn ? "Connecting..." : "Get Started"}
             </Button>
           </div>
 
@@ -84,8 +103,13 @@ export default function WelcomePage() {
 
       <footer className="border-t border-border/40 bg-background/80 backdrop-blur-sm mt-24">
         <div className="container mx-auto px-4 py-6 text-center text-sm text-muted-foreground">
-          © 2025. Built with ❤️ using{' '}
-          <a href="https://caffeine.ai" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
+          © 2025. Built with ❤️ using{" "}
+          <a
+            href="https://caffeine.ai"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-foreground"
+          >
             caffeine.ai
           </a>
         </div>
@@ -94,7 +118,11 @@ export default function WelcomePage() {
   );
 }
 
-function FeatureItem({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
+function FeatureItem({
+  icon,
+  title,
+  description,
+}: { icon: React.ReactNode; title: string; description: string }) {
   return (
     <div className="flex gap-3">
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">

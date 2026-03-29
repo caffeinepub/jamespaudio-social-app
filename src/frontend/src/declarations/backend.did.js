@@ -21,29 +21,6 @@ export const _CaffeineStorageRefillResult = IDL.Record({
 });
 export const GroupId = IDL.Text;
 export const UserId = IDL.Principal;
-export const MysteryItemType = IDL.Variant({
-  'message' : IDL.Null,
-  'badge' : IDL.Null,
-  'visual' : IDL.Null,
-  'points' : IDL.Null,
-});
-export const MysteryItem = IDL.Record({
-  'id' : IDL.Text,
-  'visualUrl' : IDL.Opt(IDL.Text),
-  'name' : IDL.Text,
-  'description' : IDL.Text,
-  'rewardCooldown' : IDL.Opt(IDL.Nat),
-  'itemType' : MysteryItemType,
-  'pointsReward' : IDL.Opt(IDL.Nat),
-});
-export const Timestamp = IDL.Int;
-export const PointsStoreItem = IDL.Record({
-  'id' : IDL.Text,
-  'name' : IDL.Text,
-  'createdAt' : Timestamp,
-  'description' : IDL.Text,
-  'price' : IDL.Nat,
-});
 export const UserRole = IDL.Variant({
   'admin' : IDL.Null,
   'user' : IDL.Null,
@@ -57,11 +34,18 @@ export const ShoppingItem = IDL.Record({
   'productDescription' : IDL.Text,
 });
 export const Status = IDL.Text;
+export const Timestamp = IDL.Int;
 export const Badge = IDL.Record({
   'name' : IDL.Text,
   'typeId' : IDL.Nat,
   'description' : IDL.Text,
   'earnedAt' : Timestamp,
+});
+export const MembershipTier = IDL.Variant({
+  'pro' : IDL.Null,
+  'free' : IDL.Null,
+  'ultra' : IDL.Null,
+  'ultimate' : IDL.Null,
 });
 export const ExternalBlob = IDL.Vec(IDL.Nat8);
 export const MusicUpload = IDL.Record({
@@ -91,23 +75,10 @@ export const UserProfile = IDL.Record({
   'followers' : IDL.Vec(UserId),
   'following' : IDL.Vec(UserId),
   'profilePicture' : IDL.Record({ 'url' : IDL.Text, 'contentType' : IDL.Text }),
+  'membershipTier' : MembershipTier,
   'isPremiumMember' : IDL.Bool,
   'points' : IDL.Nat,
   'musicUploads' : IDL.Vec(MusicUpload),
-});
-export const SearchEngine = IDL.Record({
-  'id' : IDL.Text,
-  'name' : IDL.Text,
-  'description' : IDL.Text,
-  'apiUrl' : IDL.Text,
-});
-export const MessageId = IDL.Nat;
-export const DirectMessage = IDL.Record({
-  'id' : MessageId,
-  'content' : IDL.Text,
-  'sender' : UserId,
-  'timestamp' : Timestamp,
-  'receiver' : UserId,
 });
 export const Group = IDL.Record({
   'id' : GroupId,
@@ -126,37 +97,31 @@ export const MediaAttachment = IDL.Record({
     'image' : IDL.Null,
   }),
 });
+export const MessageColor = IDL.Variant({
+  'normal' : IDL.Null,
+  'blue' : IDL.Null,
+  'cyan' : IDL.Null,
+  'orange' : IDL.Null,
+  'purple' : IDL.Null,
+  'black' : IDL.Null,
+});
+export const MessageEffect = IDL.Variant({
+  'fiery' : IDL.Null,
+  'none' : IDL.Null,
+  'skull' : IDL.Null,
+  'animated' : IDL.Null,
+  'spooky' : IDL.Null,
+  'devil' : IDL.Null,
+  'dodge' : IDL.Null,
+});
 export const GroupMessage = IDL.Record({
   'id' : IDL.Text,
   'content' : IDL.Text,
   'mediaAttachment' : IDL.Opt(MediaAttachment),
+  'color' : MessageColor,
+  'effect' : MessageEffect,
   'sender' : UserId,
   'groupId' : GroupId,
-  'timestamp' : Timestamp,
-});
-export const TransactionType = IDL.Variant({
-  'earn' : IDL.Null,
-  'spend' : IDL.Null,
-  'purchase' : IDL.Null,
-});
-export const PointsTransaction = IDL.Record({
-  'id' : IDL.Text,
-  'transactionType' : TransactionType,
-  'userId' : UserId,
-  'description' : IDL.Text,
-  'timestamp' : Timestamp,
-  'amount' : IDL.Int,
-});
-export const FeedItem = IDL.Record({
-  'status' : Status,
-  'username' : IDL.Text,
-  'userId' : UserId,
-  'timestamp' : Timestamp,
-});
-export const SearchHistoryEntry = IDL.Record({
-  'userId' : UserId,
-  'searchTerm' : IDL.Text,
-  'searchType' : IDL.Text,
   'timestamp' : Timestamp,
 });
 export const StripeSessionStatus = IDL.Variant({
@@ -165,21 +130,6 @@ export const StripeSessionStatus = IDL.Variant({
     'response' : IDL.Text,
   }),
   'failed' : IDL.Record({ 'error' : IDL.Text }),
-});
-export const DailyMysteryItemData = IDL.Record({
-  'id' : IDL.Text,
-  'userId' : UserId,
-  'lastDailyItemClaim' : IDL.Opt(Timestamp),
-  'newDailyItemResult' : IDL.Opt(MysteryItem),
-  'dailyItemBoxOpened' : IDL.Bool,
-});
-export const SearchResult = IDL.Record({
-  'bio' : IDL.Text,
-  'username' : IDL.Text,
-  'userId' : UserId,
-  'followerCount' : IDL.Nat,
-  'followingCount' : IDL.Nat,
-  'profilePicture' : IDL.Record({ 'url' : IDL.Text, 'contentType' : IDL.Text }),
 });
 export const StripeConfiguration = IDL.Record({
   'allowedCountries' : IDL.Vec(IDL.Text),
@@ -232,125 +182,51 @@ export const idlService = IDL.Service({
     ),
   '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
-  'activateFreeTrial' : IDL.Func([], [], []),
   'addGroupMember' : IDL.Func([GroupId, UserId], [], []),
-  'addMysteryItem' : IDL.Func([MysteryItem], [], []),
-  'addStoreItem' : IDL.Func([PointsStoreItem], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
-  'checkPointsEligibility' : IDL.Func([IDL.Nat], [IDL.Text], ['query']),
-  'claimDailyItemsSecret' : IDL.Func([], [IDL.Opt(MysteryItem)], []),
-  'claimDailyReward' : IDL.Func([], [IDL.Text], []),
   'createCheckoutSession' : IDL.Func(
       [IDL.Vec(ShoppingItem), IDL.Text, IDL.Text],
       [IDL.Text],
       [],
     ),
   'createGroup' : IDL.Func([IDL.Text, IDL.Text], [GroupId], []),
-  'createProfile' : IDL.Func([IDL.Text, IDL.Text], [], []),
-  'deleteMysteryItem' : IDL.Func([IDL.Text], [], []),
-  'deleteStoreItem' : IDL.Func([IDL.Text], [], []),
-  'getAllMysteryItems' : IDL.Func([], [IDL.Vec(MysteryItem)], ['query']),
-  'getAllProfiles' : IDL.Func([], [IDL.Vec(UserProfile)], ['query']),
-  'getAvailableSearchEngines' : IDL.Func(
-      [],
-      [IDL.Vec(SearchEngine)],
-      ['query'],
-    ),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
-  'getDefaultSearchEngine' : IDL.Func([], [IDL.Text], ['query']),
-  'getDirectMessagePartners' : IDL.Func(
-      [],
-      [IDL.Vec(IDL.Principal)],
-      ['query'],
-    ),
-  'getDirectMessages' : IDL.Func(
-      [IDL.Principal],
-      [IDL.Vec(DirectMessage)],
-      ['query'],
-    ),
-  'getFriendsMusicUploads' : IDL.Func(
-      [UserId],
-      [IDL.Vec(MusicUpload)],
-      ['query'],
-    ),
   'getGroup' : IDL.Func([GroupId], [IDL.Opt(Group)], ['query']),
   'getGroupMessages' : IDL.Func([GroupId], [IDL.Vec(GroupMessage)], ['query']),
-  'getLastClaimedMysteryItem' : IDL.Func(
-      [UserId],
-      [IDL.Opt(MysteryItem)],
-      ['query'],
-    ),
-  'getLastOnline' : IDL.Func([UserId], [Timestamp], ['query']),
-  'getLastOnlineForMultipleUsers' : IDL.Func(
-      [IDL.Vec(UserId)],
-      [IDL.Vec(IDL.Tuple(UserId, Timestamp))],
-      ['query'],
-    ),
-  'getPointsBalance' : IDL.Func([], [IDL.Nat], ['query']),
-  'getPointsHistory' : IDL.Func([], [IDL.Vec(PointsTransaction)], ['query']),
-  'getProfile' : IDL.Func([UserId], [UserProfile], ['query']),
-  'getRecentStatuses' : IDL.Func([IDL.Nat], [IDL.Vec(FeedItem)], ['query']),
-  'getSearchHistory' : IDL.Func([], [IDL.Vec(SearchHistoryEntry)], ['query']),
-  'getStoreItems' : IDL.Func([], [IDL.Vec(PointsStoreItem)], ['query']),
+  'getMembershipTier' : IDL.Func([UserId], [MembershipTier], ['query']),
   'getStripeSessionStatus' : IDL.Func([IDL.Text], [StripeSessionStatus], []),
   'getUserGroups' : IDL.Func([], [IDL.Vec(Group)], ['query']),
-  'getUserMysteryItems' : IDL.Func(
-      [UserId],
-      [IDL.Vec(DailyMysteryItemData)],
-      ['query'],
-    ),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
       [IDL.Opt(UserProfile)],
       ['query'],
     ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
-  'isMysteryItemClaimAvailable' : IDL.Func([UserId], [IDL.Bool], ['query']),
   'isStripeConfigured' : IDL.Func([], [IDL.Bool], ['query']),
-  'purchasePoints' : IDL.Func([IDL.Nat], [IDL.Text], []),
-  'purchaseStoreItem' : IDL.Func([IDL.Text], [IDL.Text], []),
-  'recordSearchHistory' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
-  'searchProfiles' : IDL.Func([IDL.Text], [IDL.Vec(SearchResult)], ['query']),
-  'sendDirectMessage' : IDL.Func([IDL.Principal, IDL.Text], [], []),
   'sendGroupMessage' : IDL.Func(
-      [GroupId, IDL.Text, IDL.Opt(MediaAttachment)],
-      [],
-      [],
-    ),
-  'setDefaultSearchEngine' : IDL.Func([IDL.Text], [], []),
-  'setStripeConfiguration' : IDL.Func([StripeConfiguration], [], []),
-  'spendPoints' : IDL.Func([IDL.Nat], [IDL.Text], []),
-  'transform' : IDL.Func(
-      [TransformationInput],
-      [TransformationOutput],
-      ['query'],
-    ),
-  'updateLastOnline' : IDL.Func([], [], []),
-  'updateMysteryItem' : IDL.Func(
       [
+        GroupId,
         IDL.Text,
-        IDL.Text,
-        IDL.Text,
-        IDL.Opt(IDL.Nat),
-        IDL.Opt(IDL.Text),
-        IDL.Opt(IDL.Nat),
+        IDL.Opt(MediaAttachment),
+        MessageColor,
+        MessageEffect,
       ],
       [],
       [],
     ),
-  'updateProfile' : IDL.Func(
-      [IDL.Text, IDL.Record({ 'url' : IDL.Text, 'contentType' : IDL.Text })],
+  'sendGroupMessageLegacy' : IDL.Func(
+      [GroupId, IDL.Text, IDL.Opt(MediaAttachment)],
       [],
       [],
     ),
-  'updateStoreItem' : IDL.Func([IDL.Text, IDL.Text, IDL.Text, IDL.Nat], [], []),
-  'upgradeToPremium' : IDL.Func([IDL.Nat], [], []),
-  'uploadMusic' : IDL.Func(
-      [IDL.Text, IDL.Text, IDL.Text, IDL.Text, ExternalBlob],
-      [],
-      [],
+  'setMembershipTier' : IDL.Func([UserId, MembershipTier], [], []),
+  'setStripeConfiguration' : IDL.Func([StripeConfiguration], [], []),
+  'transform' : IDL.Func(
+      [TransformationInput],
+      [TransformationOutput],
+      ['query'],
     ),
 });
 
@@ -370,29 +246,6 @@ export const idlFactory = ({ IDL }) => {
   });
   const GroupId = IDL.Text;
   const UserId = IDL.Principal;
-  const MysteryItemType = IDL.Variant({
-    'message' : IDL.Null,
-    'badge' : IDL.Null,
-    'visual' : IDL.Null,
-    'points' : IDL.Null,
-  });
-  const MysteryItem = IDL.Record({
-    'id' : IDL.Text,
-    'visualUrl' : IDL.Opt(IDL.Text),
-    'name' : IDL.Text,
-    'description' : IDL.Text,
-    'rewardCooldown' : IDL.Opt(IDL.Nat),
-    'itemType' : MysteryItemType,
-    'pointsReward' : IDL.Opt(IDL.Nat),
-  });
-  const Timestamp = IDL.Int;
-  const PointsStoreItem = IDL.Record({
-    'id' : IDL.Text,
-    'name' : IDL.Text,
-    'createdAt' : Timestamp,
-    'description' : IDL.Text,
-    'price' : IDL.Nat,
-  });
   const UserRole = IDL.Variant({
     'admin' : IDL.Null,
     'user' : IDL.Null,
@@ -406,11 +259,18 @@ export const idlFactory = ({ IDL }) => {
     'productDescription' : IDL.Text,
   });
   const Status = IDL.Text;
+  const Timestamp = IDL.Int;
   const Badge = IDL.Record({
     'name' : IDL.Text,
     'typeId' : IDL.Nat,
     'description' : IDL.Text,
     'earnedAt' : Timestamp,
+  });
+  const MembershipTier = IDL.Variant({
+    'pro' : IDL.Null,
+    'free' : IDL.Null,
+    'ultra' : IDL.Null,
+    'ultimate' : IDL.Null,
   });
   const ExternalBlob = IDL.Vec(IDL.Nat8);
   const MusicUpload = IDL.Record({
@@ -443,23 +303,10 @@ export const idlFactory = ({ IDL }) => {
       'url' : IDL.Text,
       'contentType' : IDL.Text,
     }),
+    'membershipTier' : MembershipTier,
     'isPremiumMember' : IDL.Bool,
     'points' : IDL.Nat,
     'musicUploads' : IDL.Vec(MusicUpload),
-  });
-  const SearchEngine = IDL.Record({
-    'id' : IDL.Text,
-    'name' : IDL.Text,
-    'description' : IDL.Text,
-    'apiUrl' : IDL.Text,
-  });
-  const MessageId = IDL.Nat;
-  const DirectMessage = IDL.Record({
-    'id' : MessageId,
-    'content' : IDL.Text,
-    'sender' : UserId,
-    'timestamp' : Timestamp,
-    'receiver' : UserId,
   });
   const Group = IDL.Record({
     'id' : GroupId,
@@ -478,37 +325,31 @@ export const idlFactory = ({ IDL }) => {
       'image' : IDL.Null,
     }),
   });
+  const MessageColor = IDL.Variant({
+    'normal' : IDL.Null,
+    'blue' : IDL.Null,
+    'cyan' : IDL.Null,
+    'orange' : IDL.Null,
+    'purple' : IDL.Null,
+    'black' : IDL.Null,
+  });
+  const MessageEffect = IDL.Variant({
+    'fiery' : IDL.Null,
+    'none' : IDL.Null,
+    'skull' : IDL.Null,
+    'animated' : IDL.Null,
+    'spooky' : IDL.Null,
+    'devil' : IDL.Null,
+    'dodge' : IDL.Null,
+  });
   const GroupMessage = IDL.Record({
     'id' : IDL.Text,
     'content' : IDL.Text,
     'mediaAttachment' : IDL.Opt(MediaAttachment),
+    'color' : MessageColor,
+    'effect' : MessageEffect,
     'sender' : UserId,
     'groupId' : GroupId,
-    'timestamp' : Timestamp,
-  });
-  const TransactionType = IDL.Variant({
-    'earn' : IDL.Null,
-    'spend' : IDL.Null,
-    'purchase' : IDL.Null,
-  });
-  const PointsTransaction = IDL.Record({
-    'id' : IDL.Text,
-    'transactionType' : TransactionType,
-    'userId' : UserId,
-    'description' : IDL.Text,
-    'timestamp' : Timestamp,
-    'amount' : IDL.Int,
-  });
-  const FeedItem = IDL.Record({
-    'status' : Status,
-    'username' : IDL.Text,
-    'userId' : UserId,
-    'timestamp' : Timestamp,
-  });
-  const SearchHistoryEntry = IDL.Record({
-    'userId' : UserId,
-    'searchTerm' : IDL.Text,
-    'searchType' : IDL.Text,
     'timestamp' : Timestamp,
   });
   const StripeSessionStatus = IDL.Variant({
@@ -517,24 +358,6 @@ export const idlFactory = ({ IDL }) => {
       'response' : IDL.Text,
     }),
     'failed' : IDL.Record({ 'error' : IDL.Text }),
-  });
-  const DailyMysteryItemData = IDL.Record({
-    'id' : IDL.Text,
-    'userId' : UserId,
-    'lastDailyItemClaim' : IDL.Opt(Timestamp),
-    'newDailyItemResult' : IDL.Opt(MysteryItem),
-    'dailyItemBoxOpened' : IDL.Bool,
-  });
-  const SearchResult = IDL.Record({
-    'bio' : IDL.Text,
-    'username' : IDL.Text,
-    'userId' : UserId,
-    'followerCount' : IDL.Nat,
-    'followingCount' : IDL.Nat,
-    'profilePicture' : IDL.Record({
-      'url' : IDL.Text,
-      'contentType' : IDL.Text,
-    }),
   });
   const StripeConfiguration = IDL.Record({
     'allowedCountries' : IDL.Vec(IDL.Text),
@@ -584,133 +407,55 @@ export const idlFactory = ({ IDL }) => {
       ),
     '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
-    'activateFreeTrial' : IDL.Func([], [], []),
     'addGroupMember' : IDL.Func([GroupId, UserId], [], []),
-    'addMysteryItem' : IDL.Func([MysteryItem], [], []),
-    'addStoreItem' : IDL.Func([PointsStoreItem], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
-    'checkPointsEligibility' : IDL.Func([IDL.Nat], [IDL.Text], ['query']),
-    'claimDailyItemsSecret' : IDL.Func([], [IDL.Opt(MysteryItem)], []),
-    'claimDailyReward' : IDL.Func([], [IDL.Text], []),
     'createCheckoutSession' : IDL.Func(
         [IDL.Vec(ShoppingItem), IDL.Text, IDL.Text],
         [IDL.Text],
         [],
       ),
     'createGroup' : IDL.Func([IDL.Text, IDL.Text], [GroupId], []),
-    'createProfile' : IDL.Func([IDL.Text, IDL.Text], [], []),
-    'deleteMysteryItem' : IDL.Func([IDL.Text], [], []),
-    'deleteStoreItem' : IDL.Func([IDL.Text], [], []),
-    'getAllMysteryItems' : IDL.Func([], [IDL.Vec(MysteryItem)], ['query']),
-    'getAllProfiles' : IDL.Func([], [IDL.Vec(UserProfile)], ['query']),
-    'getAvailableSearchEngines' : IDL.Func(
-        [],
-        [IDL.Vec(SearchEngine)],
-        ['query'],
-      ),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
-    'getDefaultSearchEngine' : IDL.Func([], [IDL.Text], ['query']),
-    'getDirectMessagePartners' : IDL.Func(
-        [],
-        [IDL.Vec(IDL.Principal)],
-        ['query'],
-      ),
-    'getDirectMessages' : IDL.Func(
-        [IDL.Principal],
-        [IDL.Vec(DirectMessage)],
-        ['query'],
-      ),
-    'getFriendsMusicUploads' : IDL.Func(
-        [UserId],
-        [IDL.Vec(MusicUpload)],
-        ['query'],
-      ),
     'getGroup' : IDL.Func([GroupId], [IDL.Opt(Group)], ['query']),
     'getGroupMessages' : IDL.Func(
         [GroupId],
         [IDL.Vec(GroupMessage)],
         ['query'],
       ),
-    'getLastClaimedMysteryItem' : IDL.Func(
-        [UserId],
-        [IDL.Opt(MysteryItem)],
-        ['query'],
-      ),
-    'getLastOnline' : IDL.Func([UserId], [Timestamp], ['query']),
-    'getLastOnlineForMultipleUsers' : IDL.Func(
-        [IDL.Vec(UserId)],
-        [IDL.Vec(IDL.Tuple(UserId, Timestamp))],
-        ['query'],
-      ),
-    'getPointsBalance' : IDL.Func([], [IDL.Nat], ['query']),
-    'getPointsHistory' : IDL.Func([], [IDL.Vec(PointsTransaction)], ['query']),
-    'getProfile' : IDL.Func([UserId], [UserProfile], ['query']),
-    'getRecentStatuses' : IDL.Func([IDL.Nat], [IDL.Vec(FeedItem)], ['query']),
-    'getSearchHistory' : IDL.Func([], [IDL.Vec(SearchHistoryEntry)], ['query']),
-    'getStoreItems' : IDL.Func([], [IDL.Vec(PointsStoreItem)], ['query']),
+    'getMembershipTier' : IDL.Func([UserId], [MembershipTier], ['query']),
     'getStripeSessionStatus' : IDL.Func([IDL.Text], [StripeSessionStatus], []),
     'getUserGroups' : IDL.Func([], [IDL.Vec(Group)], ['query']),
-    'getUserMysteryItems' : IDL.Func(
-        [UserId],
-        [IDL.Vec(DailyMysteryItemData)],
-        ['query'],
-      ),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(UserProfile)],
         ['query'],
       ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
-    'isMysteryItemClaimAvailable' : IDL.Func([UserId], [IDL.Bool], ['query']),
     'isStripeConfigured' : IDL.Func([], [IDL.Bool], ['query']),
-    'purchasePoints' : IDL.Func([IDL.Nat], [IDL.Text], []),
-    'purchaseStoreItem' : IDL.Func([IDL.Text], [IDL.Text], []),
-    'recordSearchHistory' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
-    'searchProfiles' : IDL.Func([IDL.Text], [IDL.Vec(SearchResult)], ['query']),
-    'sendDirectMessage' : IDL.Func([IDL.Principal, IDL.Text], [], []),
     'sendGroupMessage' : IDL.Func(
-        [GroupId, IDL.Text, IDL.Opt(MediaAttachment)],
-        [],
-        [],
-      ),
-    'setDefaultSearchEngine' : IDL.Func([IDL.Text], [], []),
-    'setStripeConfiguration' : IDL.Func([StripeConfiguration], [], []),
-    'spendPoints' : IDL.Func([IDL.Nat], [IDL.Text], []),
-    'transform' : IDL.Func(
-        [TransformationInput],
-        [TransformationOutput],
-        ['query'],
-      ),
-    'updateLastOnline' : IDL.Func([], [], []),
-    'updateMysteryItem' : IDL.Func(
         [
+          GroupId,
           IDL.Text,
-          IDL.Text,
-          IDL.Text,
-          IDL.Opt(IDL.Nat),
-          IDL.Opt(IDL.Text),
-          IDL.Opt(IDL.Nat),
+          IDL.Opt(MediaAttachment),
+          MessageColor,
+          MessageEffect,
         ],
         [],
         [],
       ),
-    'updateProfile' : IDL.Func(
-        [IDL.Text, IDL.Record({ 'url' : IDL.Text, 'contentType' : IDL.Text })],
+    'sendGroupMessageLegacy' : IDL.Func(
+        [GroupId, IDL.Text, IDL.Opt(MediaAttachment)],
         [],
         [],
       ),
-    'updateStoreItem' : IDL.Func(
-        [IDL.Text, IDL.Text, IDL.Text, IDL.Nat],
-        [],
-        [],
-      ),
-    'upgradeToPremium' : IDL.Func([IDL.Nat], [], []),
-    'uploadMusic' : IDL.Func(
-        [IDL.Text, IDL.Text, IDL.Text, IDL.Text, ExternalBlob],
-        [],
-        [],
+    'setMembershipTier' : IDL.Func([UserId, MembershipTier], [], []),
+    'setStripeConfiguration' : IDL.Func([StripeConfiguration], [], []),
+    'transform' : IDL.Func(
+        [TransformationInput],
+        [TransformationOutput],
+        ['query'],
       ),
   });
 };

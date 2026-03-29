@@ -1,31 +1,53 @@
-import { useGetCallerUserProfile, useGetPointsHistory } from '../hooks/useQueries';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Coins, TrendingUp, Gift, ShoppingCart, History, Zap } from 'lucide-react';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { useNavigate } from '@tanstack/react-router';
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { useNavigate } from "@tanstack/react-router";
+import {
+  Coins,
+  Gift,
+  History,
+  ShoppingCart,
+  TrendingUp,
+  Zap,
+} from "lucide-react";
+import {
+  useGetCallerUserProfile,
+  useGetPointsHistory,
+} from "../hooks/useQueries";
 
 export default function PointsPage() {
-  const { data: userProfile, isLoading: profileLoading } = useGetCallerUserProfile();
-  const { data: pointsHistory = [], isLoading: historyLoading } = useGetPointsHistory();
+  const { data: userProfile, isLoading: profileLoading } =
+    useGetCallerUserProfile();
+  const { data: pointsHistory = [], isLoading: historyLoading } =
+    useGetPointsHistory();
   const navigate = useNavigate();
 
   const userPoints = Number(userProfile?.points || 0n);
 
   const formatTimestamp = (timestamp: bigint) => {
     const date = new Date(Number(timestamp) / 1000000);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
   };
 
   const getTransactionIcon = (type: string) => {
     switch (type) {
-      case 'earn':
+      case "earn":
         return <TrendingUp className="h-4 w-4 text-green-500" />;
-      case 'spend':
+      case "spend":
         return <ShoppingCart className="h-4 w-4 text-red-500" />;
-      case 'purchase':
+      case "purchase":
         return <Coins className="h-4 w-4 text-blue-500" />;
       default:
         return <Coins className="h-4 w-4" />;
@@ -34,14 +56,14 @@ export default function PointsPage() {
 
   const getTransactionColor = (type: string) => {
     switch (type) {
-      case 'earn':
-        return 'text-green-600 dark:text-green-400';
-      case 'spend':
-        return 'text-red-600 dark:text-red-400';
-      case 'purchase':
-        return 'text-blue-600 dark:text-blue-400';
+      case "earn":
+        return "text-green-600 dark:text-green-400";
+      case "spend":
+        return "text-red-600 dark:text-red-400";
+      case "purchase":
+        return "text-blue-600 dark:text-blue-400";
       default:
-        return 'text-foreground';
+        return "text-foreground";
     }
   };
 
@@ -59,7 +81,9 @@ export default function PointsPage() {
           </div>
           <div>
             <h1 className="text-3xl font-bold">Points Wallet</h1>
-            <p className="text-muted-foreground">Manage your points and rewards</p>
+            <p className="text-muted-foreground">
+              Manage your points and rewards
+            </p>
           </div>
         </div>
 
@@ -67,9 +91,9 @@ export default function PointsPage() {
         <Card className="border-2 bg-gradient-to-br from-card to-[oklch(var(--rewards-accent)/0.1)]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <img 
-                src="/assets/generated/points-balance-coins-transparent.dim_200x200.png" 
-                alt="Points" 
+              <img
+                src="/assets/generated/points-balance-coins-transparent.dim_200x200.png"
+                alt="Points"
                 className="h-8 w-8"
               />
               Your Balance
@@ -79,19 +103,19 @@ export default function PointsPage() {
           <CardContent>
             <div className="space-y-4">
               <div className="text-5xl font-bold bg-gradient-to-r from-[oklch(var(--rewards-primary))] to-[oklch(var(--rewards-accent))] bg-clip-text text-transparent">
-                {profileLoading ? '...' : userPoints.toLocaleString()}
+                {profileLoading ? "..." : userPoints.toLocaleString()}
               </div>
               <div className="flex gap-2">
-                <Button 
-                  onClick={() => navigate({ to: '/points-store' })}
+                <Button
+                  onClick={() => navigate({ to: "/points-store" })}
                   className="flex-1 bg-gradient-to-r from-[oklch(var(--rewards-primary))] to-[oklch(var(--rewards-accent))] hover:opacity-90"
                 >
                   <ShoppingCart className="mr-2 h-4 w-4" />
                   Visit Store
                 </Button>
-                <Button 
+                <Button
                   variant="outline"
-                  onClick={() => navigate({ to: '/rewards' })}
+                  onClick={() => navigate({ to: "/rewards" })}
                   className="flex-1"
                 >
                   <Gift className="mr-2 h-4 w-4" />
@@ -114,7 +138,7 @@ export default function PointsPage() {
             <CardContent>
               <div className="text-2xl font-bold">
                 {pointsHistory
-                  .filter(t => t.transactionType === 'earn')
+                  .filter((t) => t.transactionType === "earn")
                   .reduce((sum, t) => sum + Number(t.amount), 0)
                   .toLocaleString()}
               </div>
@@ -132,8 +156,8 @@ export default function PointsPage() {
               <div className="text-2xl font-bold">
                 {Math.abs(
                   pointsHistory
-                    .filter(t => t.transactionType === 'spend')
-                    .reduce((sum, t) => sum + Number(t.amount), 0)
+                    .filter((t) => t.transactionType === "spend")
+                    .reduce((sum, t) => sum + Number(t.amount), 0),
                 ).toLocaleString()}
               </div>
             </CardContent>
@@ -159,7 +183,9 @@ export default function PointsPage() {
               <Zap className="h-5 w-5 text-yellow-500" />
               Ways to Earn Points
             </CardTitle>
-            <CardDescription>Complete these actions to earn more points</CardDescription>
+            <CardDescription>
+              Complete these actions to earn more points
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -168,7 +194,9 @@ export default function PointsPage() {
                   <Gift className="h-5 w-5 text-[oklch(var(--rewards-primary))]" />
                   <div>
                     <p className="font-medium">Daily Rewards</p>
-                    <p className="text-sm text-muted-foreground">Claim once per day</p>
+                    <p className="text-sm text-muted-foreground">
+                      Claim once per day
+                    </p>
                   </div>
                 </div>
                 <Badge variant="secondary">+10 pts</Badge>
@@ -179,7 +207,9 @@ export default function PointsPage() {
                   <TrendingUp className="h-5 w-5 text-green-500" />
                   <div>
                     <p className="font-medium">Daily Login Streak</p>
-                    <p className="text-sm text-muted-foreground">Bonus for consecutive days</p>
+                    <p className="text-sm text-muted-foreground">
+                      Bonus for consecutive days
+                    </p>
                   </div>
                 </div>
                 <Badge variant="secondary">+5-20 pts</Badge>
@@ -190,7 +220,9 @@ export default function PointsPage() {
                   <Coins className="h-5 w-5 text-blue-500" />
                   <div>
                     <p className="font-medium">User Interactions</p>
-                    <p className="text-sm text-muted-foreground">Messaging, posting, engaging</p>
+                    <p className="text-sm text-muted-foreground">
+                      Messaging, posting, engaging
+                    </p>
                   </div>
                 </div>
                 <Badge variant="secondary">+1-5 pts</Badge>
@@ -210,29 +242,40 @@ export default function PointsPage() {
           </CardHeader>
           <CardContent>
             {historyLoading ? (
-              <div className="text-center py-8 text-muted-foreground">Loading history...</div>
+              <div className="text-center py-8 text-muted-foreground">
+                Loading history...
+              </div>
             ) : sortedHistory.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <History className="h-12 w-12 mx-auto mb-2 opacity-50" />
                 <p>No transactions yet</p>
-                <p className="text-sm">Start earning points to see your history here</p>
+                <p className="text-sm">
+                  Start earning points to see your history here
+                </p>
               </div>
             ) : (
               <ScrollArea className="h-[400px]">
                 <div className="space-y-2">
                   {sortedHistory.map((transaction) => (
-                    <div key={transaction.id} className="flex items-center justify-between p-3 rounded-lg border">
+                    <div
+                      key={transaction.id}
+                      className="flex items-center justify-between p-3 rounded-lg border"
+                    >
                       <div className="flex items-center gap-3">
                         {getTransactionIcon(transaction.transactionType)}
                         <div>
-                          <p className="font-medium">{transaction.description}</p>
+                          <p className="font-medium">
+                            {transaction.description}
+                          </p>
                           <p className="text-xs text-muted-foreground">
                             {formatTimestamp(transaction.timestamp)}
                           </p>
                         </div>
                       </div>
-                      <div className={`font-bold ${getTransactionColor(transaction.transactionType)}`}>
-                        {Number(transaction.amount) > 0 ? '+' : ''}
+                      <div
+                        className={`font-bold ${getTransactionColor(transaction.transactionType)}`}
+                      >
+                        {Number(transaction.amount) > 0 ? "+" : ""}
                         {Number(transaction.amount).toLocaleString()}
                       </div>
                     </div>

@@ -1,14 +1,20 @@
-import { useGetCallerUserProfile, useGetLastOnline } from '../hooks/useQueries';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Button } from '@/components/ui/button';
-import { Edit, Users, UserPlus, Coins, Award, Clock } from 'lucide-react';
-import { useState } from 'react';
-import EditProfileDialog from '../components/EditProfileDialog';
-import { useInternetIdentity } from '../hooks/useInternetIdentity';
-import { formatDistanceToNow } from 'date-fns';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { formatDistanceToNow } from "date-fns";
+import { Award, Clock, Coins, Edit, UserPlus, Users } from "lucide-react";
+import { useState } from "react";
+import EditProfileDialog from "../components/EditProfileDialog";
+import { useInternetIdentity } from "../hooks/useInternetIdentity";
+import { useGetCallerUserProfile, useGetLastOnline } from "../hooks/useQueries";
 
 export default function ProfilePage() {
   const { data: userProfile, isLoading } = useGetCallerUserProfile();
@@ -38,21 +44,21 @@ export default function ProfilePage() {
 
   const getInitials = (name: string) => {
     return name
-      .split(' ')
+      .split(" ")
       .map((n) => n[0])
-      .join('')
+      .join("")
       .toUpperCase()
       .slice(0, 2);
   };
 
   const formatLastOnline = (timestamp: bigint) => {
-    if (!timestamp || timestamp === 0n) return 'Never';
+    if (!timestamp || timestamp === 0n) return "Never";
     const date = new Date(Number(timestamp) / 1000000);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMinutes = Math.floor(diffMs / 60000);
-    
-    if (diffMinutes < 5) return 'Active now';
+
+    if (diffMinutes < 5) return "Active now";
     return formatDistanceToNow(date, { addSuffix: true });
   };
 
@@ -80,7 +86,9 @@ export default function ProfilePage() {
                 <div className="flex-1 space-y-4">
                   <div>
                     <div className="flex items-center gap-3 mb-2">
-                      <h1 className="text-3xl font-bold">{userProfile.username}</h1>
+                      <h1 className="text-3xl font-bold">
+                        {userProfile.username}
+                      </h1>
                       <Button
                         variant="outline"
                         size="sm"
@@ -90,7 +98,9 @@ export default function ProfilePage() {
                         Edit Profile
                       </Button>
                     </div>
-                    <p className="text-muted-foreground">{userProfile.bio || 'No bio yet'}</p>
+                    <p className="text-muted-foreground">
+                      {userProfile.bio || "No bio yet"}
+                    </p>
                   </div>
 
                   <div className="flex flex-wrap gap-4">
@@ -112,7 +122,9 @@ export default function ProfilePage() {
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4 text-muted-foreground" />
                       <span className="text-muted-foreground">
-                        {lastOnline ? formatLastOnline(lastOnline) : 'Loading...'}
+                        {lastOnline
+                          ? formatLastOnline(lastOnline)
+                          : "Loading..."}
                       </span>
                     </div>
                   </div>
@@ -131,7 +143,9 @@ export default function ProfilePage() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Points</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Total Points
+                </CardTitle>
                 <Coins className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -141,7 +155,9 @@ export default function ProfilePage() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Rewards Claimed</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Rewards Claimed
+                </CardTitle>
                 <Award className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -151,7 +167,9 @@ export default function ProfilePage() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Login Streak</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Login Streak
+                </CardTitle>
                 <Award className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -161,11 +179,15 @@ export default function ProfilePage() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Apps Published</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Apps Published
+                </CardTitle>
                 <Award className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{Number(userProfile.publishedAppsCount || 0n)}</div>
+                <div className="text-2xl font-bold">
+                  {Number(userProfile.publishedAppsCount || 0n)}
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -182,8 +204,12 @@ export default function ProfilePage() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  {userProfile.badges.map((badge, index) => (
-                    <Badge key={index} variant="secondary" className="text-sm px-3 py-1">
+                  {userProfile.badges.map((badge) => (
+                    <Badge
+                      key={badge.name}
+                      variant="secondary"
+                      className="text-sm px-3 py-1"
+                    >
                       {badge.name}
                     </Badge>
                   ))}
@@ -194,8 +220,8 @@ export default function ProfilePage() {
         </div>
       </ScrollArea>
 
-      <EditProfileDialog 
-        open={editDialogOpen} 
+      <EditProfileDialog
+        open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
         currentProfile={userProfile}
       />

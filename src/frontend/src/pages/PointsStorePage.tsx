@@ -1,16 +1,37 @@
-import { useState } from 'react';
-import { useGetCallerUserProfile, useGetStoreItems, usePurchaseStoreItem, usePurchasePoints } from '../hooks/useQueries';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ShoppingCart, Coins, Package, CreditCard, Sparkles, Zap, Crown, Gift } from 'lucide-react';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
-import { Separator } from '@/components/ui/separator';
-import { useNavigate } from '@tanstack/react-router';
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useNavigate } from "@tanstack/react-router";
+import {
+  Coins,
+  CreditCard,
+  Crown,
+  Gift,
+  Package,
+  ShoppingCart,
+  Sparkles,
+  Zap,
+} from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import {
+  useGetCallerUserProfile,
+  useGetStoreItems,
+  usePurchasePoints,
+  usePurchaseStoreItem,
+} from "../hooks/useQueries";
 
 export default function PointsStorePage() {
   const { data: userProfile } = useGetCallerUserProfile();
@@ -19,13 +40,17 @@ export default function PointsStorePage() {
   const purchasePoints = usePurchasePoints();
   const navigate = useNavigate();
 
-  const [pointsToBuy, setPointsToBuy] = useState('100');
+  const [pointsToBuy, setPointsToBuy] = useState("100");
 
   const userPoints = Number(userProfile?.points || 0n);
 
-  const handlePurchaseItem = async (itemId: string, itemName: string, price: bigint) => {
+  const handlePurchaseItem = async (
+    itemId: string,
+    itemName: string,
+    price: bigint,
+  ) => {
     if (Number(price) > userPoints) {
-      toast.error('Insufficient points', {
+      toast.error("Insufficient points", {
         description: `You need ${Number(price) - userPoints} more points to purchase this item.`,
       });
       return;
@@ -33,34 +58,34 @@ export default function PointsStorePage() {
 
     try {
       await purchaseStoreItem.mutateAsync(itemId);
-      toast.success('Purchase successful!', {
+      toast.success("Purchase successful!", {
         description: `You've redeemed ${itemName}`,
       });
     } catch (error: any) {
-      toast.error('Purchase failed', {
-        description: error.message || 'Unable to complete purchase',
+      toast.error("Purchase failed", {
+        description: error.message || "Unable to complete purchase",
       });
     }
   };
 
   const handleBuyPoints = async () => {
-    const amount = parseInt(pointsToBuy);
-    if (isNaN(amount) || amount <= 0) {
-      toast.error('Invalid amount', {
-        description: 'Please enter a valid number of points',
+    const amount = Number.parseInt(pointsToBuy);
+    if (Number.isNaN(amount) || amount <= 0) {
+      toast.error("Invalid amount", {
+        description: "Please enter a valid number of points",
       });
       return;
     }
 
     try {
       await purchasePoints.mutateAsync(BigInt(amount));
-      toast.success('Points purchased!', {
+      toast.success("Points purchased!", {
         description: `${amount} points added to your balance`,
       });
-      setPointsToBuy('100');
+      setPointsToBuy("100");
     } catch (error: any) {
-      toast.error('Purchase failed', {
-        description: error.message || 'Unable to purchase points',
+      toast.error("Purchase failed", {
+        description: error.message || "Unable to purchase points",
       });
     }
   };
@@ -78,10 +103,12 @@ export default function PointsStorePage() {
             </div>
             <div>
               <h1 className="text-3xl font-bold">Points Store</h1>
-              <p className="text-muted-foreground">Purchase points and redeem rewards</p>
+              <p className="text-muted-foreground">
+                Purchase points and redeem rewards
+              </p>
             </div>
           </div>
-          <Button variant="outline" onClick={() => navigate({ to: '/points' })}>
+          <Button variant="outline" onClick={() => navigate({ to: "/points" })}>
             <Coins className="mr-2 h-4 w-4" />
             {userPoints.toLocaleString()} pts
           </Button>
@@ -91,16 +118,19 @@ export default function PointsStorePage() {
         <Card className="border-2 bg-gradient-to-r from-[oklch(var(--rewards-primary)/0.2)] to-[oklch(var(--rewards-accent)/0.2)]">
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row items-center gap-6">
-              <img 
-                src="/assets/generated/points-store-hero.dim_800x600.png" 
-                alt="Points Store" 
+              <img
+                src="/assets/generated/points-store-hero.dim_800x600.png"
+                alt="Points Store"
                 className="w-full md:w-64 h-48 object-cover rounded-lg"
               />
               <div className="flex-1 space-y-2">
-                <h2 className="text-2xl font-bold">Welcome to the Points Store!</h2>
+                <h2 className="text-2xl font-bold">
+                  Welcome to the Points Store!
+                </h2>
                 <p className="text-muted-foreground">
-                  Purchase additional points or spend your earned points on exclusive content, apps, and features.
-                  Build your collection and unlock premium experiences!
+                  Purchase additional points or spend your earned points on
+                  exclusive content, apps, and features. Build your collection
+                  and unlock premium experiences!
                 </p>
                 <div className="flex gap-2 pt-2">
                   <Badge variant="secondary" className="gap-1">
@@ -135,15 +165,16 @@ export default function PointsStorePage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <img 
-                    src="/assets/generated/points-wallet-icon-transparent.dim_64x64.png" 
-                    alt="Wallet" 
+                  <img
+                    src="/assets/generated/points-wallet-icon-transparent.dim_64x64.png"
+                    alt="Wallet"
                     className="h-6 w-6"
                   />
                   Purchase Points
                 </CardTitle>
                 <CardDescription>
-                  Buy points to unlock more content and features (Stripe integration coming soon)
+                  Buy points to unlock more content and features (Stripe
+                  integration coming soon)
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -171,7 +202,9 @@ export default function PointsStorePage() {
                       >
                         <Coins className="h-5 w-5 text-[oklch(var(--rewards-primary))]" />
                         <span className="font-bold">{amount}</span>
-                        <span className="text-xs text-muted-foreground">points</span>
+                        <span className="text-xs text-muted-foreground">
+                          points
+                        </span>
                       </Button>
                     ))}
                   </div>
@@ -181,18 +214,28 @@ export default function PointsStorePage() {
 
                 <div className="bg-muted/50 p-4 rounded-lg space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Points to purchase:</span>
-                    <span className="font-medium">{parseInt(pointsToBuy) || 0}</span>
+                    <span className="text-muted-foreground">
+                      Points to purchase:
+                    </span>
+                    <span className="font-medium">
+                      {Number.parseInt(pointsToBuy) || 0}
+                    </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Current balance:</span>
-                    <span className="font-medium">{userPoints.toLocaleString()}</span>
+                    <span className="text-muted-foreground">
+                      Current balance:
+                    </span>
+                    <span className="font-medium">
+                      {userPoints.toLocaleString()}
+                    </span>
                   </div>
                   <Separator />
                   <div className="flex justify-between font-bold">
                     <span>New balance:</span>
                     <span className="text-[oklch(var(--rewards-primary))]">
-                      {(userPoints + (parseInt(pointsToBuy) || 0)).toLocaleString()}
+                      {(
+                        userPoints + (Number.parseInt(pointsToBuy) || 0)
+                      ).toLocaleString()}
                     </span>
                   </div>
                 </div>
@@ -201,10 +244,14 @@ export default function PointsStorePage() {
                 <Button
                   className="w-full bg-gradient-to-r from-[oklch(var(--rewards-primary))] to-[oklch(var(--rewards-accent))] hover:opacity-90"
                   onClick={handleBuyPoints}
-                  disabled={purchasePoints.isPending || !pointsToBuy || parseInt(pointsToBuy) <= 0}
+                  disabled={
+                    purchasePoints.isPending ||
+                    !pointsToBuy ||
+                    Number.parseInt(pointsToBuy) <= 0
+                  }
                 >
                   {purchasePoints.isPending ? (
-                    'Processing...'
+                    "Processing..."
                   ) : (
                     <>
                       <CreditCard className="mr-2 h-4 w-4" />
@@ -224,7 +271,8 @@ export default function PointsStorePage() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  Real payment processing with Stripe will be available soon. For now, enjoy demo purchases to test the system!
+                  Real payment processing with Stripe will be available soon.
+                  For now, enjoy demo purchases to test the system!
                 </p>
               </CardContent>
             </Card>
@@ -234,18 +282,20 @@ export default function PointsStorePage() {
           <TabsContent value="redeem" className="space-y-6">
             {itemsLoading ? (
               <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
                 <p className="text-muted-foreground">Loading store items...</p>
               </div>
             ) : storeItems.length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center">
-                  <img 
-                    src="/assets/generated/points-shopping-cart.dim_300x300.png" 
-                    alt="Empty Store" 
+                  <img
+                    src="/assets/generated/points-shopping-cart.dim_300x300.png"
+                    alt="Empty Store"
                     className="w-32 h-32 mx-auto mb-4 opacity-50"
                   />
-                  <h3 className="text-lg font-semibold mb-2">No Items Available</h3>
+                  <h3 className="text-lg font-semibold mb-2">
+                    No Items Available
+                  </h3>
                   <p className="text-muted-foreground">
                     Check back soon! New items are added regularly.
                   </p>
@@ -259,7 +309,9 @@ export default function PointsStorePage() {
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <CardTitle className="text-lg">{item.name}</CardTitle>
-                          <CardDescription className="mt-1">{item.description}</CardDescription>
+                          <CardDescription className="mt-1">
+                            {item.description}
+                          </CardDescription>
                         </div>
                         <Badge variant="secondary" className="ml-2">
                           <Coins className="h-3 w-3 mr-1" />
@@ -275,11 +327,16 @@ export default function PointsStorePage() {
                     <CardFooter>
                       <Button
                         className="w-full"
-                        onClick={() => handlePurchaseItem(item.id, item.name, item.price)}
-                        disabled={purchaseStoreItem.isPending || Number(item.price) > userPoints}
+                        onClick={() =>
+                          handlePurchaseItem(item.id, item.name, item.price)
+                        }
+                        disabled={
+                          purchaseStoreItem.isPending ||
+                          Number(item.price) > userPoints
+                        }
                       >
                         {purchaseStoreItem.isPending ? (
-                          'Processing...'
+                          "Processing..."
                         ) : Number(item.price) > userPoints ? (
                           <>
                             <Coins className="mr-2 h-4 w-4" />

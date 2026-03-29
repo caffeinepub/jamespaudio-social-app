@@ -1,12 +1,25 @@
-import { useState } from 'react';
-import { Video, Upload, Play } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { toast } from 'sonner';
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Play, Upload, Video } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface VideoItem {
   id: string;
@@ -18,13 +31,13 @@ interface VideoItem {
 
 export default function VideosPage() {
   const [videos, setVideos] = useState<VideoItem[]>([]);
-  const [uploadForm, setUploadForm] = useState({ title: '', description: '' });
+  const [uploadForm, setUploadForm] = useState({ title: "", description: "" });
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
   const handleUpload = async () => {
     if (!videoFile || !uploadForm.title) {
-      toast.error('Please provide a title and select a video file');
+      toast.error("Please provide a title and select a video file");
       return;
     }
 
@@ -35,14 +48,14 @@ export default function VideosPage() {
         title: uploadForm.title,
         description: uploadForm.description,
         url: URL.createObjectURL(videoFile),
-        thumbnail: '/assets/generated/video-player-mockup.dim_600x400.png',
+        thumbnail: "/assets/generated/video-player-mockup.dim_600x400.png",
       };
       setVideos([...videos, newVideo]);
-      toast.success('Video uploaded successfully!');
-      setUploadForm({ title: '', description: '' });
+      toast.success("Video uploaded successfully!");
+      setUploadForm({ title: "", description: "" });
       setVideoFile(null);
-    } catch (error) {
-      toast.error('Failed to upload video');
+    } catch (_error) {
+      toast.error("Failed to upload video");
     } finally {
       setIsUploading(false);
     }
@@ -51,7 +64,11 @@ export default function VideosPage() {
   return (
     <div className="h-full flex flex-col">
       <div className="relative h-48 bg-gradient-to-br from-video-primary via-video-secondary to-video-accent overflow-hidden">
-        <img src="/assets/generated/video-player-mockup.dim_600x400.png" alt="Videos" className="absolute inset-0 w-full h-full object-cover opacity-20" />
+        <img
+          src="/assets/generated/video-player-mockup.dim_600x400.png"
+          alt="Videos"
+          className="absolute inset-0 w-full h-full object-cover opacity-20"
+        />
         <div className="relative z-10 container mx-auto px-4 h-full flex items-center">
           <div>
             <h1 className="text-4xl font-bold text-white mb-2">Videos</h1>
@@ -75,7 +92,9 @@ export default function VideosPage() {
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle>Upload Video</DialogTitle>
-                    <DialogDescription>Share your video with the community</DialogDescription>
+                    <DialogDescription>
+                      Share your video with the community
+                    </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4">
                     <div>
@@ -83,7 +102,12 @@ export default function VideosPage() {
                       <Input
                         id="videoTitle"
                         value={uploadForm.title}
-                        onChange={(e) => setUploadForm({ ...uploadForm, title: e.target.value })}
+                        onChange={(e) =>
+                          setUploadForm({
+                            ...uploadForm,
+                            title: e.target.value,
+                          })
+                        }
                         placeholder="Enter video title"
                       />
                     </div>
@@ -92,7 +116,12 @@ export default function VideosPage() {
                       <Input
                         id="videoDesc"
                         value={uploadForm.description}
-                        onChange={(e) => setUploadForm({ ...uploadForm, description: e.target.value })}
+                        onChange={(e) =>
+                          setUploadForm({
+                            ...uploadForm,
+                            description: e.target.value,
+                          })
+                        }
                         placeholder="Enter video description"
                       />
                     </div>
@@ -102,11 +131,17 @@ export default function VideosPage() {
                         id="videoFile"
                         type="file"
                         accept="video/*"
-                        onChange={(e) => setVideoFile(e.target.files?.[0] || null)}
+                        onChange={(e) =>
+                          setVideoFile(e.target.files?.[0] || null)
+                        }
                       />
                     </div>
-                    <Button onClick={handleUpload} disabled={isUploading} className="w-full">
-                      {isUploading ? 'Uploading...' : 'Upload Video'}
+                    <Button
+                      onClick={handleUpload}
+                      disabled={isUploading}
+                      className="w-full"
+                    >
+                      {isUploading ? "Uploading..." : "Upload Video"}
                     </Button>
                   </div>
                 </DialogContent>
@@ -117,15 +152,24 @@ export default function VideosPage() {
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-12">
                   <Video className="h-16 w-16 text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground text-center">No videos yet. Upload your first video to get started!</p>
+                  <p className="text-muted-foreground text-center">
+                    No videos yet. Upload your first video to get started!
+                  </p>
                 </CardContent>
               </Card>
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {videos.map((video) => (
-                  <Card key={video.id} className="hover:shadow-lg transition-shadow">
+                  <Card
+                    key={video.id}
+                    className="hover:shadow-lg transition-shadow"
+                  >
                     <div className="aspect-video bg-muted relative overflow-hidden">
-                      <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover" />
+                      <img
+                        src={video.thumbnail}
+                        alt={video.title}
+                        className="w-full h-full object-cover"
+                      />
                       <div className="absolute inset-0 flex items-center justify-center bg-black/30">
                         <Play className="h-12 w-12 text-white" />
                       </div>
@@ -135,7 +179,12 @@ export default function VideosPage() {
                       <CardDescription>{video.description}</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <video src={video.url} controls className="w-full rounded" />
+                      {/* biome-ignore lint/a11y/useMediaCaption: user-generated content */}
+                      <video
+                        src={video.url}
+                        controls
+                        className="w-full rounded"
+                      />
                     </CardContent>
                   </Card>
                 ))}

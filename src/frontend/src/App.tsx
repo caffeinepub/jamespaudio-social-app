@@ -1,19 +1,27 @@
-import { useEffect, useState } from 'react';
-import { useInternetIdentity } from './hooks/useInternetIdentity';
-import { useGetCallerUserProfile, useUpdateLastOnline } from './hooks/useQueries';
-import LoginPage from './pages/LoginPage';
-import MainApp from './pages/MainApp';
-import ProfileSetupModal from './components/ProfileSetupModal';
-import LoadingScreen from './components/LoadingScreen';
+import { useEffect, useState } from "react";
+import LoadingScreen from "./components/LoadingScreen";
+import ProfileSetupModal from "./components/ProfileSetupModal";
+import { useInternetIdentity } from "./hooks/useInternetIdentity";
+import {
+  useGetCallerUserProfile,
+  useUpdateLastOnline,
+} from "./hooks/useQueries";
+import LoginPage from "./pages/LoginPage";
+import MainApp from "./pages/MainApp";
 
 export default function App() {
   const { identity, isInitializing } = useInternetIdentity();
-  const { data: userProfile, isLoading: profileLoading, isFetched } = useGetCallerUserProfile();
+  const {
+    data: userProfile,
+    isLoading: profileLoading,
+    isFetched,
+  } = useGetCallerUserProfile();
   const updateLastOnline = useUpdateLastOnline();
   const [showLoadingScreen, setShowLoadingScreen] = useState(true);
 
   const isAuthenticated = !!identity;
-  const showProfileSetup = isAuthenticated && !profileLoading && isFetched && userProfile === null;
+  const showProfileSetup =
+    isAuthenticated && !profileLoading && isFetched && userProfile === null;
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -24,12 +32,13 @@ export default function App() {
   }, []);
 
   // Update last online timestamp periodically when authenticated
+  // biome-ignore lint/correctness/useExhaustiveDependencies: mutation function is stable
   useEffect(() => {
     if (isAuthenticated && userProfile) {
       updateLastOnline.mutate();
       const interval = setInterval(() => {
         updateLastOnline.mutate();
-      }, 60000); // Update every minute
+      }, 60000);
       return () => clearInterval(interval);
     }
   }, [isAuthenticated, userProfile]);

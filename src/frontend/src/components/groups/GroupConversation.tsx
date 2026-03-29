@@ -1,17 +1,28 @@
-import { useState, useEffect, useRef } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Send, Paperclip, Mic, Video, Smile, UserPlus } from 'lucide-react';
-import { useGetGroupMessages, useSendGroupMessage, useGetProfile } from '../../hooks/useQueries';
-import { useInternetIdentity } from '../../hooks/useInternetIdentity';
-import { toast } from 'sonner';
-import type { GroupId, MediaAttachment } from '../../backend';
-import { Principal } from '@dfinity/principal';
-import AddGroupMembersDialog from './AddGroupMembersDialog';
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Send, Smile, UserPlus, Video } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import type { GroupId, MediaAttachment } from "../../backend";
+import { MembershipTier, MessageColor, MessageEffect } from "../../backend";
+import { useActor } from "../../hooks/useActor";
+import { useInternetIdentity } from "../../hooks/useInternetIdentity";
+import {
+  useGetCallerMembershipTier,
+  useGetGroupMessages,
+} from "../../hooks/useQueries";
+import {
+  getColorClasses,
+  normalizeColor,
+  normalizeEffect,
+  renderEffectDecoration,
+} from "../../utils/messageStyle";
+import AddGroupMembersDialog from "./AddGroupMembersDialog";
+import GroupComposerStylePicker from "./GroupComposerStylePicker";
 
 interface GroupConversationProps {
   groupId: GroupId;
@@ -19,15 +30,31 @@ interface GroupConversationProps {
   memberIds: string[];
 }
 
-export default function GroupConversation({ groupId, groupName, memberIds }: GroupConversationProps) {
+export default function GroupConversation({
+  groupId,
+  groupName,
+  memberIds,
+}: GroupConversationProps) {
   const { identity } = useInternetIdentity();
-  const [messageText, setMessageText] = useState('');
-  const [mediaAttachment, setMediaAttachment] = useState<MediaAttachment | null>(null);
+  const { actor } = useActor();
+  const [messageText, setMessageText] = useState("");
+  const [mediaAttachment, setMediaAttachment] =
+    useState<MediaAttachment | null>(null);
   const [isAddMembersOpen, setIsAddMembersOpen] = useState(false);
+  const [messageColor, setMessageColor] = useState<MessageColor>(
+    MessageColor.blue,
+  );
+  const [messageEffect, setMessageEffect] = useState<MessageEffect>(
+    MessageEffect.none,
+  );
+  const [sendButtonStyle, setSendButtonStyle] = useState<"normal" | "emoji">(
+    "normal",
+  );
+  const [isSending, setIsSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const { data: messages, isLoading, refetch } = useGetGroupMessages(groupId);
-  const sendMessage = useSendGroupMessage();
+  const { data: userTier = MembershipTier.free } = useGetCallerMembershipTier();
 
   const currentUserId = identity?.getPrincipal();
 
@@ -36,7 +63,7 @@ export default function GroupConversation({ groupId, groupName, memberIds }: Gro
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  });
 
   // Refresh messages periodically
   useEffect(() => {
@@ -47,50 +74,59 @@ export default function GroupConversation({ groupId, groupName, memberIds }: Gro
   }, [refetch]);
 
   const handleSendMessage = async () => {
-    if (!messageText.trim() && !mediaAttachment) {
-      toast.error('Please enter a message or attach media');
+    if ((!messageText.trim() && !mediaAttachment) || !actor) {
+      toast.error("Please enter a message or attach media");
       return;
     }
 
+    setIsSending(true);
     try {
-      await sendMessage.mutateAsync({
+      await actor.sendGroupMessage(
         groupId,
-        content: messageText,
+        messageText,
         mediaAttachment,
-      });
-      setMessageText('');
+        messageColor,
+        messageEffect,
+      );
+      setMessageText("");
       setMediaAttachment(null);
-      toast.success('Message sent!');
-    } catch (error: any) {
-      console.error('Error sending message:', error);
-      if (error.message?.includes('Unauthorized') || error.message?.includes('members')) {
-        toast.error('You must be a group member to send messages');
+      setMessageColor(MessageColor.blue);
+      setMessageEffect(MessageEffect.none);
+      toast.success("Message sent!");
+      setTimeout(() => refetch(), 500);
+    } catch (error: unknown) {
+      console.error("Error sending message:", error);
+      const msg = (error as Error).message ?? "";
+      if (msg.includes("Unauthorized") || msg.includes("members")) {
+        toast.error("You must be a group member to send messages");
+      } else if (msg.includes("membership tier")) {
+        toast.error("Your membership tier does not allow this message styling");
       } else {
-        toast.error('Failed to send message. Please try again.');
+        toast.error("Failed to send message. Please try again.");
       }
+    } finally {
+      setIsSending(false);
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
   };
 
   const handleAttachVideo = () => {
-    // Placeholder for video attachment
-    toast.info('Video attachment feature coming soon!');
+    toast.info("Video attachment feature coming soon!");
   };
 
   const handleAddEmoji = () => {
-    // Simple emoji insertion
-    setMessageText(prev => prev + '😊');
+    setMessageText((prev) => `${prev}😊`);
   };
 
   const formatTimestamp = (timestamp: bigint) => {
     const date = new Date(Number(timestamp) / 1000000);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
   return (
@@ -115,55 +151,79 @@ export default function GroupConversation({ groupId, groupName, memberIds }: Gro
         </CardHeader>
 
         <CardContent className="flex-1 flex flex-col p-0">
-          {/* Messages Area */}
           <ScrollArea className="flex-1 p-4" ref={scrollRef}>
             {isLoading ? (
               <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                <p className="text-sm text-muted-foreground">Loading messages...</p>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
+                <p className="text-sm text-muted-foreground">
+                  Loading messages...
+                </p>
               </div>
             ) : messages && messages.length > 0 ? (
               <div className="space-y-4">
                 {messages.map((message) => {
-                  const isOwnMessage = currentUserId?.toString() === message.sender.toString();
-                  
+                  const isOwnMessage =
+                    currentUserId?.toString() === message.sender.toString();
+                  const msgColor = normalizeColor(message.color);
+                  const msgEffect = normalizeEffect(message.effect);
+                  const effectDecoration = renderEffectDecoration(msgEffect);
+
                   return (
                     <div
                       key={message.id}
-                      className={`flex gap-3 ${isOwnMessage ? 'flex-row-reverse' : 'flex-row'}`}
+                      className={`flex gap-3 ${
+                        isOwnMessage ? "flex-row-reverse" : "flex-row"
+                      }`}
                     >
                       <Avatar className="h-8 w-8 flex-shrink-0">
                         <AvatarFallback>
-                          {message.sender.toString().substring(0, 2).toUpperCase()}
+                          {message.sender
+                            .toString()
+                            .substring(0, 2)
+                            .toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      
-                      <div className={`flex-1 ${isOwnMessage ? 'text-right' : 'text-left'}`}>
+
+                      <div
+                        className={`flex-1 ${
+                          isOwnMessage ? "text-right" : "text-left"
+                        }`}
+                      >
                         <div
                           className={`inline-block max-w-[70%] rounded-lg p-3 ${
                             isOwnMessage
-                              ? 'bg-primary text-primary-foreground'
-                              : 'bg-muted'
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted"
                           }`}
                         >
-                          <p className="text-sm break-words">{message.content}</p>
-                          
+                          <p
+                            className={`text-sm break-words ${getColorClasses(msgColor, isOwnMessage)}`}
+                          >
+                            {effectDecoration && (
+                              <span className="mr-1">{effectDecoration}</span>
+                            )}
+                            {message.content}
+                          </p>
+
                           {message.mediaAttachment && (
                             <div className="mt-2">
-                              {message.mediaAttachment.mediaType === 'video' && (
+                              {message.mediaAttachment.mediaType ===
+                                "video" && (
+                                // biome-ignore lint/a11y/useMediaCaption: user-generated content
                                 <video
                                   src={message.mediaAttachment.url}
                                   controls
                                   className="max-w-full rounded"
-                                  style={{ maxHeight: '200px' }}
+                                  style={{ maxHeight: "200px" }}
                                 />
                               )}
-                              {message.mediaAttachment.mediaType === 'image' && (
+                              {message.mediaAttachment.mediaType ===
+                                "image" && (
                                 <img
                                   src={message.mediaAttachment.url}
                                   alt="Attachment"
                                   className="max-w-full rounded"
-                                  style={{ maxHeight: '200px' }}
+                                  style={{ maxHeight: "200px" }}
                                 />
                               )}
                             </div>
@@ -187,20 +247,7 @@ export default function GroupConversation({ groupId, groupName, memberIds }: Gro
             )}
           </ScrollArea>
 
-          {/* Voice Chat Section (Coming Soon) */}
-          <div className="border-t border-b bg-muted/30 p-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Mic className="h-5 w-5 text-muted-foreground" />
-                <span className="text-sm font-medium">Voice Chat</span>
-                <Badge variant="secondary" className="text-xs">Not Available</Badge>
-              </div>
-              <p className="text-xs text-muted-foreground">Coming soon</p>
-            </div>
-          </div>
-
-          {/* Message Input */}
-          <div className="p-4 border-t">
+          <div className="p-4 border-t bg-blue-50 dark:bg-blue-950/20">
             {mediaAttachment && (
               <div className="mb-2 p-2 bg-muted rounded flex items-center justify-between">
                 <span className="text-sm">Media attached</span>
@@ -213,7 +260,33 @@ export default function GroupConversation({ groupId, groupName, memberIds }: Gro
                 </Button>
               </div>
             )}
-            
+
+            <div className="mb-3">
+              <GroupComposerStylePicker
+                currentColor={messageColor}
+                currentEffect={messageEffect}
+                userTier={userTier}
+                onColorChange={setMessageColor}
+                onEffectChange={setMessageEffect}
+              />
+            </div>
+
+            <div className="flex gap-2 mb-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() =>
+                  setSendButtonStyle(
+                    sendButtonStyle === "normal" ? "emoji" : "normal",
+                  )
+                }
+                title="Toggle send button style"
+              >
+                {sendButtonStyle === "emoji" ? "☠️" : "Normal"}
+              </Button>
+            </div>
+
             <div className="flex gap-2">
               <Button
                 variant="ghost"
@@ -223,7 +296,7 @@ export default function GroupConversation({ groupId, groupName, memberIds }: Gro
               >
                 <Video className="h-5 w-5" />
               </Button>
-              
+
               <Button
                 variant="ghost"
                 size="icon"
@@ -232,21 +305,26 @@ export default function GroupConversation({ groupId, groupName, memberIds }: Gro
               >
                 <Smile className="h-5 w-5" />
               </Button>
-              
+
               <Input
                 placeholder="Type a message... (emoji supported 😊)"
                 value={messageText}
                 onChange={(e) => setMessageText(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="flex-1"
+                className="flex-1 bg-blue-100 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 focus-visible:ring-blue-500"
+                disabled={isSending}
               />
-              
+
               <Button
                 onClick={handleSendMessage}
-                disabled={(!messageText.trim() && !mediaAttachment) || sendMessage.isPending}
+                disabled={
+                  (!messageText.trim() && !mediaAttachment) || isSending
+                }
               >
-                {sendMessage.isPending ? (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                {isSending ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                ) : sendButtonStyle === "emoji" ? (
+                  <span className="text-lg">☠️</span>
                 ) : (
                   <Send className="h-4 w-4" />
                 )}
@@ -262,7 +340,6 @@ export default function GroupConversation({ groupId, groupName, memberIds }: Gro
         groupId={groupId}
         existingMemberIds={memberIds}
         onMemberAdded={() => {
-          // Keep the conversation open and refresh
           refetch();
         }}
       />

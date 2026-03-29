@@ -1,37 +1,88 @@
-import { Users, Plus } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Button } from '@/components/ui/button';
-import { useState } from 'react';
-import { useGetUserGroups, useCreateGroup } from '../hooks/useQueries';
-import { useInternetIdentity } from '../hooks/useInternetIdentity';
-import GroupConversation from '../components/groups/GroupConversation';
-import CreateGroupDialog from '../components/groups/CreateGroupDialog';
-import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import type { Principal } from "@dfinity/principal";
+import { Plus, Users } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import CreateGroupDialog from "../components/groups/CreateGroupDialog";
+import GroupConversation from "../components/groups/GroupConversation";
+import { useInternetIdentity } from "../hooks/useInternetIdentity";
+import {
+  useAddGroupMember,
+  useCreateGroup,
+  useGetUserGroups,
+} from "../hooks/useQueries";
 
-export default function GroupsPage() {
+interface GroupsPageProps {
+  targetGroupId?: string | null;
+  onGroupSelected?: () => void;
+}
+
+export default function GroupsPage({
+  targetGroupId,
+  onGroupSelected,
+}: GroupsPageProps) {
   const { identity } = useInternetIdentity();
   const { data: groups, isLoading } = useGetUserGroups();
   const createGroup = useCreateGroup();
+  const addGroupMember = useAddGroupMember();
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [createError, setCreateError] = useState<string>('');
+  const [createError, setCreateError] = useState<string>("");
+  const [_selectedInitialMembers, setSelectedInitialMembers] = useState<
+    Principal[]
+  >([]);
 
   const isAuthenticated = !!identity;
 
-  const selectedGroup = groups?.find(g => g.id === selectedGroupId);
+  const selectedGroup = groups?.find((g) => g.id === selectedGroupId);
 
-  const handleCreateGroup = async (name: string, description: string) => {
-    setCreateError('');
+  // Auto-select target group when provided
+  useEffect(() => {
+    if (targetGroupId && groups) {
+      const targetExists = groups.find((g) => g.id === targetGroupId);
+      if (targetExists) {
+        setSelectedGroupId(targetGroupId);
+        if (onGroupSelected) {
+          onGroupSelected();
+        }
+      }
+    }
+  }, [targetGroupId, groups, onGroupSelected]);
+
+  const handleCreateGroup = async (
+    name: string,
+    description: string,
+    initialMembers: Principal[],
+  ) => {
+    setCreateError("");
     try {
       const newGroupId = await createGroup.mutateAsync({ name, description });
-      toast.success('Group created successfully!');
+
+      // Add initial members
+      if (initialMembers.length > 0) {
+        await Promise.all(
+          initialMembers.map((userId) =>
+            addGroupMember.mutateAsync({ groupId: newGroupId, userId }),
+          ),
+        );
+      }
+
+      toast.success("Group created successfully!");
       setIsCreateDialogOpen(false);
+      setSelectedInitialMembers([]);
       // Auto-select the newly created group
       setSelectedGroupId(newGroupId);
     } catch (error: any) {
-      const errorMessage = error.message || 'Failed to create group';
+      const errorMessage = error.message || "Failed to create group";
       setCreateError(errorMessage);
       toast.error(errorMessage);
     }
@@ -47,7 +98,9 @@ export default function GroupsPage() {
                 <Users className="h-10 w-10" />
                 Groups
               </h1>
-              <p className="text-white/90">Create and manage your own communities</p>
+              <p className="text-white/90">
+                Create and manage your own communities
+              </p>
             </div>
           </div>
         </div>
@@ -58,7 +111,9 @@ export default function GroupsPage() {
               <Card className="max-w-2xl mx-auto border-orange-500/50 bg-orange-500/5">
                 <CardContent className="py-12 text-center">
                   <Users className="h-16 w-16 text-orange-500 mx-auto mb-4" />
-                  <p className="text-lg font-semibold mb-2">Sign in to access groups</p>
+                  <p className="text-lg font-semibold mb-2">
+                    Sign in to access groups
+                  </p>
                   <p className="text-sm text-muted-foreground">
                     You need to be signed in to view and participate in groups.
                   </p>
@@ -82,9 +137,9 @@ export default function GroupsPage() {
             </h1>
             <p className="text-white/90">Connect with your communities</p>
           </div>
-          <Button 
-            variant="secondary" 
-            size="lg" 
+          <Button
+            variant="secondary"
+            size="lg"
             className="gap-2"
             onClick={() => setIsCreateDialogOpen(true)}
           >
@@ -101,18 +156,22 @@ export default function GroupsPage() {
             <ScrollArea className="h-full">
               <div className="p-4 space-y-2">
                 <h2 className="text-lg font-semibold mb-4">Your Groups</h2>
-                
+
                 {isLoading ? (
                   <div className="text-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                    <p className="text-sm text-muted-foreground">Loading groups...</p>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
+                    <p className="text-sm text-muted-foreground">
+                      Loading groups...
+                    </p>
                   </div>
                 ) : groups && groups.length > 0 ? (
                   groups.map((group) => (
                     <Card
                       key={group.id}
                       className={`cursor-pointer transition-all hover:shadow-md ${
-                        selectedGroupId === group.id ? 'border-primary bg-primary/5' : ''
+                        selectedGroupId === group.id
+                          ? "border-primary bg-primary/5"
+                          : ""
                       }`}
                       onClick={() => setSelectedGroupId(group.id)}
                     >
@@ -133,7 +192,9 @@ export default function GroupsPage() {
                   <Card>
                     <CardContent className="py-8 text-center">
                       <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-sm text-muted-foreground">No groups yet</p>
+                      <p className="text-sm text-muted-foreground">
+                        No groups yet
+                      </p>
                       <p className="text-xs text-muted-foreground mt-2">
                         Create or join a group to get started
                       </p>
@@ -150,7 +211,7 @@ export default function GroupsPage() {
               <GroupConversation
                 groupId={selectedGroup.id}
                 groupName={selectedGroup.name}
-                memberIds={selectedGroup.members.map(m => m.toString())}
+                memberIds={selectedGroup.members.map((m) => m.toString())}
               />
             ) : (
               <div className="h-full flex items-center justify-center">
@@ -171,7 +232,7 @@ export default function GroupsPage() {
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
         onSubmit={handleCreateGroup}
-        isSubmitting={createGroup.isPending}
+        isSubmitting={createGroup.isPending || addGroupMember.isPending}
         error={createError}
       />
     </div>

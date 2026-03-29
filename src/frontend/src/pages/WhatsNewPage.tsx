@@ -1,6 +1,12 @@
-import { Newspaper } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Newspaper } from "lucide-react";
 
 export default function WhatsNewPage() {
   const content = `Welcome to JAMESPaudio Social App!
@@ -37,7 +43,11 @@ Stay tuned for more exciting features coming soon!`;
   return (
     <div className="h-full flex flex-col">
       <div className="relative h-48 bg-gradient-to-br from-news-primary via-news-secondary to-news-accent overflow-hidden">
-        <img src="/assets/generated/news-announcement.dim_300x300.png" alt="News" className="absolute right-0 top-0 h-full opacity-20" />
+        <img
+          src="/assets/generated/news-announcement.dim_300x300.png"
+          alt="News"
+          className="absolute right-0 top-0 h-full opacity-20"
+        />
         <div className="relative z-10 container mx-auto px-4 h-full flex items-center">
           <div>
             <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
@@ -55,11 +65,15 @@ Stay tuned for more exciting features coming soon!`;
             <Card>
               <CardHeader>
                 <CardTitle>Platform Announcements</CardTitle>
-                <CardDescription>Stay updated with the latest news</CardDescription>
+                <CardDescription>
+                  Stay updated with the latest news
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="prose dark:prose-invert max-w-none">
-                  <pre className="whitespace-pre-wrap font-sans text-sm">{content}</pre>
+                  <pre className="whitespace-pre-wrap font-sans text-sm">
+                    {content}
+                  </pre>
                 </div>
               </CardContent>
             </Card>

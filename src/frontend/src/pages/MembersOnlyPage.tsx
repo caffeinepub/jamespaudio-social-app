@@ -1,22 +1,40 @@
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Crown, Lock, Star, Sparkles, Zap, Clock, Gift } from 'lucide-react';
-import { useGetCallerUserProfile, useGetPremiumContent, useUpgradeToPremium, useActivateFreeTrial } from '../hooks/useQueries';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import { useState } from 'react';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Clock, Crown, Gift, Lock, Sparkles, Star, Zap } from "lucide-react";
+import { useState } from "react";
+import {
+  useActivateFreeTrial,
+  useGetCallerUserProfile,
+  useGetPremiumContent,
+  useUpgradeToPremium,
+} from "../hooks/useQueries";
 
 export default function MembersOnlyPage() {
-  const { data: userProfile, isLoading: profileLoading } = useGetCallerUserProfile();
-  const { data: premiumContent, isLoading: contentLoading } = useGetPremiumContent();
+  const { data: userProfile, isLoading: profileLoading } =
+    useGetCallerUserProfile();
+  const { data: premiumContent, isLoading: contentLoading } =
+    useGetPremiumContent();
   const upgradeMutation = useUpgradeToPremium();
   const activateTrialMutation = useActivateFreeTrial();
   const [selectedMonths, setSelectedMonths] = useState(1);
 
   const isPremium = userProfile?.isPremiumMember || false;
-  const hasTrialStarted = userProfile?.freeTrialStartTime !== undefined && userProfile?.freeTrialStartTime !== null;
-  const hasActiveFreeTrial = hasTrialStarted && userProfile?.freeTrialExpiresAt !== undefined && userProfile?.freeTrialExpiresAt !== null && 
+  const hasTrialStarted =
+    userProfile?.freeTrialStartTime !== undefined &&
+    userProfile?.freeTrialStartTime !== null;
+  const hasActiveFreeTrial =
+    hasTrialStarted &&
+    userProfile?.freeTrialExpiresAt !== undefined &&
+    userProfile?.freeTrialExpiresAt !== null &&
     Date.now() * 1000000 < Number(userProfile.freeTrialExpiresAt);
   const isTrialExpired = hasTrialStarted && !hasActiveFreeTrial;
   const canAccessPremium = isPremium || hasActiveFreeTrial;
@@ -30,21 +48,21 @@ export default function MembersOnlyPage() {
   };
 
   const getTrialTimeRemaining = () => {
-    if (!hasActiveFreeTrial || !userProfile?.freeTrialExpiresAt) return '';
+    if (!hasActiveFreeTrial || !userProfile?.freeTrialExpiresAt) return "";
     const expiresAt = Number(userProfile.freeTrialExpiresAt) / 1000000;
     const now = Date.now();
     const diff = expiresAt - now;
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const days = Math.floor(hours / 24);
-    if (days > 0) return `${days} day${days > 1 ? 's' : ''} remaining`;
-    return `${hours} hour${hours > 1 ? 's' : ''} remaining`;
+    if (days > 0) return `${days} day${days > 1 ? "s" : ""} remaining`;
+    return `${hours} hour${hours > 1 ? "s" : ""} remaining`;
   };
 
   if (profileLoading) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
           <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
@@ -74,9 +92,13 @@ export default function MembersOnlyPage() {
         {!canAccessPremium && !isTrialExpired ? (
           <Alert className="border-yellow-500/50 bg-yellow-500/10">
             <Lock className="h-5 w-5 text-yellow-500" />
-            <AlertTitle className="text-yellow-500">Premium Membership Required</AlertTitle>
+            <AlertTitle className="text-yellow-500">
+              Premium Membership Required
+            </AlertTitle>
             <AlertDescription>
-              Start your free 3-day trial or upgrade to premium to unlock exclusive content, early access to new features, and special perks!
+              Start your free 3-day trial or upgrade to premium to unlock
+              exclusive content, early access to new features, and special
+              perks!
             </AlertDescription>
           </Alert>
         ) : hasActiveFreeTrial ? (
@@ -84,15 +106,19 @@ export default function MembersOnlyPage() {
             <Gift className="h-5 w-5 text-blue-500" />
             <AlertTitle className="text-blue-500">Free Trial Active</AlertTitle>
             <AlertDescription>
-              You're enjoying premium access! {getTrialTimeRemaining()} in your trial. Upgrade now to continue after your trial ends.
+              You're enjoying premium access! {getTrialTimeRemaining()} in your
+              trial. Upgrade now to continue after your trial ends.
             </AlertDescription>
           </Alert>
         ) : isTrialExpired ? (
           <Alert className="border-orange-500/50 bg-orange-500/10">
             <Clock className="h-5 w-5 text-orange-500" />
-            <AlertTitle className="text-orange-500">Trial Expired – Upgrade Now</AlertTitle>
+            <AlertTitle className="text-orange-500">
+              Trial Expired – Upgrade Now
+            </AlertTitle>
             <AlertDescription>
-              Your free trial has ended. Upgrade to premium to continue enjoying exclusive content and benefits!
+              Your free trial has ended. Upgrade to premium to continue enjoying
+              exclusive content and benefits!
             </AlertDescription>
           </Alert>
         ) : (
@@ -116,7 +142,8 @@ export default function MembersOnlyPage() {
                     Try Premium Free for 3 Days!
                   </CardTitle>
                   <CardDescription className="mt-2 text-base">
-                    Experience all premium features with no commitment. Cancel anytime during your trial.
+                    Experience all premium features with no commitment. Cancel
+                    anytime during your trial.
                   </CardDescription>
                 </div>
                 <img
@@ -135,7 +162,7 @@ export default function MembersOnlyPage() {
               >
                 {activateTrialMutation.isPending ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
                     Activating...
                   </>
                 ) : (
@@ -164,24 +191,28 @@ export default function MembersOnlyPage() {
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {[
-                  { months: 1, price: '$9.99', popular: false },
-                  { months: 3, price: '$24.99', popular: true },
-                  { months: 12, price: '$79.99', popular: false },
+                  { months: 1, price: "$9.99", popular: false },
+                  { months: 3, price: "$24.99", popular: true },
+                  { months: 12, price: "$79.99", popular: false },
                 ].map((plan) => (
                   <Card
                     key={plan.months}
                     className={`cursor-pointer transition-all ${
                       selectedMonths === plan.months
-                        ? 'border-yellow-500 shadow-lg shadow-yellow-500/20'
-                        : 'hover:border-yellow-500/50'
-                    } ${plan.popular ? 'border-yellow-500/50' : ''}`}
+                        ? "border-yellow-500 shadow-lg shadow-yellow-500/20"
+                        : "hover:border-yellow-500/50"
+                    } ${plan.popular ? "border-yellow-500/50" : ""}`}
                     onClick={() => setSelectedMonths(plan.months)}
                   >
                     <CardHeader>
                       {plan.popular && (
-                        <Badge className="w-fit mb-2 bg-yellow-500 text-black">Most Popular</Badge>
+                        <Badge className="w-fit mb-2 bg-yellow-500 text-black">
+                          Most Popular
+                        </Badge>
                       )}
-                      <CardTitle>{plan.months} {plan.months === 1 ? 'Month' : 'Months'}</CardTitle>
+                      <CardTitle>
+                        {plan.months} {plan.months === 1 ? "Month" : "Months"}
+                      </CardTitle>
                       <CardDescription className="text-2xl font-bold text-foreground">
                         {plan.price}
                       </CardDescription>
@@ -228,7 +259,7 @@ export default function MembersOnlyPage() {
                 >
                   {upgradeMutation.isPending ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2" />
                       Processing...
                     </>
                   ) : (
@@ -238,7 +269,7 @@ export default function MembersOnlyPage() {
                     </>
                   )}
                 </Button>
-                
+
                 <Button
                   disabled
                   variant="outline"
@@ -270,17 +301,27 @@ export default function MembersOnlyPage() {
 
             {contentLoading ? (
               <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                <p className="text-muted-foreground">Loading premium content...</p>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
+                <p className="text-muted-foreground">
+                  Loading premium content...
+                </p>
               </div>
             ) : premiumContent && premiumContent.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {premiumContent.map((content) => (
-                  <Card key={content.id} className="border-yellow-500/30 hover:border-yellow-500/50 transition-colors">
+                  <Card
+                    key={content.id}
+                    className="border-yellow-500/30 hover:border-yellow-500/50 transition-colors"
+                  >
                     <CardHeader>
                       <div className="flex items-start justify-between">
-                        <CardTitle className="text-lg">{content.title}</CardTitle>
-                        <Badge variant="outline" className="border-yellow-500 text-yellow-500">
+                        <CardTitle className="text-lg">
+                          {content.title}
+                        </CardTitle>
+                        <Badge
+                          variant="outline"
+                          className="border-yellow-500 text-yellow-500"
+                        >
                           <Crown className="h-3 w-3 mr-1" />
                           Premium
                         </Badge>
@@ -289,7 +330,10 @@ export default function MembersOnlyPage() {
                     </CardHeader>
                     <CardContent>
                       <p className="text-xs text-muted-foreground">
-                        Released: {new Date(Number(content.releaseTime) / 1000000).toLocaleDateString()}
+                        Released:{" "}
+                        {new Date(
+                          Number(content.releaseTime) / 1000000,
+                        ).toLocaleDateString()}
                       </p>
                     </CardContent>
                   </Card>
@@ -300,7 +344,8 @@ export default function MembersOnlyPage() {
                 <CardContent className="py-12 text-center">
                   <Lock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <p className="text-muted-foreground">
-                    No premium content available yet. Check back soon for exclusive updates!
+                    No premium content available yet. Check back soon for
+                    exclusive updates!
                   </p>
                 </CardContent>
               </Card>
@@ -328,7 +373,9 @@ export default function MembersOnlyPage() {
                             className="h-12 w-12 mx-auto mb-2"
                           />
                           <p className="text-sm font-semibold">Trial Expired</p>
-                          <p className="text-xs text-muted-foreground">Upgrade to access</p>
+                          <p className="text-xs text-muted-foreground">
+                            Upgrade to access
+                          </p>
                         </>
                       ) : (
                         <>
@@ -339,7 +386,9 @@ export default function MembersOnlyPage() {
                     </div>
                   </div>
                   <CardHeader>
-                    <CardTitle className="blur-sm">Exclusive Content {i}</CardTitle>
+                    <CardTitle className="blur-sm">
+                      Exclusive Content {i}
+                    </CardTitle>
                     <CardDescription className="blur-sm">
                       Amazing premium content awaits you...
                     </CardDescription>
@@ -362,7 +411,17 @@ export default function MembersOnlyPage() {
             alt="Members Only"
             className="w-32 h-32 mx-auto mb-4 opacity-50"
           />
-          <p>© 2025. Built with love using <a href="https://caffeine.ai" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">caffeine.ai</a></p>
+          <p>
+            © 2025. Built with love using{" "}
+            <a
+              href="https://caffeine.ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              caffeine.ai
+            </a>
+          </p>
         </div>
       </div>
     </ScrollArea>

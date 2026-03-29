@@ -1,9 +1,22 @@
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { MapPin, Calendar, CheckCircle2, Clock, Wrench, TestTube } from 'lucide-react';
-import { useGetUpcomingFeatures } from '../hooks/useQueries';
-import { FeatureStatus } from '../types/temporary';
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Calendar,
+  CheckCircle2,
+  Clock,
+  MapPin,
+  TestTube,
+  Wrench,
+} from "lucide-react";
+import { useGetUpcomingFeatures } from "../hooks/useQueries";
+import { FeatureStatus } from "../types/temporary";
 
 export default function WhatsNextPage() {
   const { data: upcomingFeatures, isLoading } = useGetUpcomingFeatures();
@@ -22,11 +35,26 @@ export default function WhatsNextPage() {
   };
 
   const getStatusBadge = (status: FeatureStatus) => {
-    const variants: Record<FeatureStatus, { label: string; className: string }> = {
-      [FeatureStatus.released]: { label: 'Released', className: 'bg-green-500/10 text-green-500 border-green-500/30' },
-      [FeatureStatus.testing]: { label: 'Testing', className: 'bg-blue-500/10 text-blue-500 border-blue-500/30' },
-      [FeatureStatus.inProgress]: { label: 'In Progress', className: 'bg-orange-500/10 text-orange-500 border-orange-500/30' },
-      [FeatureStatus.planned]: { label: 'Planned', className: 'bg-gray-500/10 text-gray-500 border-gray-500/30' },
+    const variants: Record<
+      FeatureStatus,
+      { label: string; className: string }
+    > = {
+      [FeatureStatus.released]: {
+        label: "Released",
+        className: "bg-green-500/10 text-green-500 border-green-500/30",
+      },
+      [FeatureStatus.testing]: {
+        label: "Testing",
+        className: "bg-blue-500/10 text-blue-500 border-blue-500/30",
+      },
+      [FeatureStatus.inProgress]: {
+        label: "In Progress",
+        className: "bg-orange-500/10 text-orange-500 border-orange-500/30",
+      },
+      [FeatureStatus.planned]: {
+        label: "Planned",
+        className: "bg-gray-500/10 text-gray-500 border-gray-500/30",
+      },
     };
 
     const variant = variants[status];
@@ -41,7 +69,7 @@ export default function WhatsNextPage() {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
           <p className="text-muted-foreground">Loading roadmap...</p>
         </div>
       </div>
@@ -58,7 +86,8 @@ export default function WhatsNextPage() {
           </div>
           <h1 className="text-4xl font-bold">What's Next</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Explore our roadmap and see what exciting features are coming to JAMESPaudio
+            Explore our roadmap and see what exciting features are coming to
+            JAMESPaudio
           </p>
         </div>
 
@@ -77,15 +106,22 @@ export default function WhatsNextPage() {
 
           {upcomingFeatures && upcomingFeatures.length > 0 ? (
             <div className="space-y-4">
-              {upcomingFeatures.map((feature, index) => (
-                <Card key={index} className="hover:shadow-lg transition-shadow">
+              {upcomingFeatures.map((feature) => (
+                <Card
+                  key={feature.title}
+                  className="hover:shadow-lg transition-shadow"
+                >
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3 flex-1">
                         {getStatusIcon(feature.status)}
                         <div className="flex-1">
-                          <CardTitle className="text-xl">{feature.title}</CardTitle>
-                          <CardDescription className="mt-2">{feature.description}</CardDescription>
+                          <CardTitle className="text-xl">
+                            {feature.title}
+                          </CardTitle>
+                          <CardDescription className="mt-2">
+                            {feature.description}
+                          </CardDescription>
                         </div>
                       </div>
                       {getStatusBadge(feature.status)}
@@ -95,7 +131,10 @@ export default function WhatsNextPage() {
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Calendar className="h-4 w-4" />
                       <span>
-                        Planned Release: {new Date(Number(feature.plannedRelease) / 1000000).toLocaleDateString()}
+                        Planned Release:{" "}
+                        {new Date(
+                          Number(feature.plannedRelease) / 1000000,
+                        ).toLocaleDateString()}
                       </span>
                     </div>
                   </CardContent>
@@ -107,7 +146,8 @@ export default function WhatsNextPage() {
               <CardContent className="py-12 text-center">
                 <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <p className="text-muted-foreground">
-                  No upcoming features announced yet. Check back soon for exciting updates!
+                  No upcoming features announced yet. Check back soon for
+                  exciting updates!
                 </p>
               </CardContent>
             </Card>
@@ -125,7 +165,8 @@ export default function WhatsNextPage() {
                   Groups & Communities
                 </CardTitle>
                 <CardDescription>
-                  Create and join groups to connect with like-minded users. Share content, organize events, and build your community.
+                  Create and join groups to connect with like-minded users.
+                  Share content, organize events, and build your community.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -136,7 +177,8 @@ export default function WhatsNextPage() {
                   Gaming Platform
                 </CardTitle>
                 <CardDescription>
-                  Play games directly on JAMESPaudio! Compete with friends, earn achievements, and climb the leaderboards.
+                  Play games directly on JAMESPaudio! Compete with friends, earn
+                  achievements, and climb the leaderboards.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -145,7 +187,17 @@ export default function WhatsNextPage() {
 
         {/* Footer */}
         <div className="text-center py-8 text-sm text-muted-foreground">
-          <p>© 2025. Built with love using <a href="https://caffeine.ai" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">caffeine.ai</a></p>
+          <p>
+            © 2025. Built with love using{" "}
+            <a
+              href="https://caffeine.ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              caffeine.ai
+            </a>
+          </p>
         </div>
       </div>
     </ScrollArea>

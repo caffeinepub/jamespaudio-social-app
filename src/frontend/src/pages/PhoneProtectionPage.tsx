@@ -1,8 +1,14 @@
-import { Shield, CheckCircle, AlertTriangle } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { AlertTriangle, CheckCircle, Shield } from "lucide-react";
+import { useState } from "react";
 
 export default function PhoneProtectionPage() {
   const [isScanning, setIsScanning] = useState(false);
@@ -21,7 +27,11 @@ export default function PhoneProtectionPage() {
     <div className="h-full flex flex-col">
       <div className="relative h-48 bg-gradient-to-br from-protection-primary via-protection-secondary to-protection-accent overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-center opacity-20">
-          <img src="/assets/generated/security-shield-transparent.dim_64x64.png" alt="Security" className="h-32 w-32" />
+          <img
+            src="/assets/generated/security-shield-transparent.dim_64x64.png"
+            alt="Security"
+            className="h-32 w-32"
+          />
         </div>
         <div className="relative z-10 container mx-auto px-4 h-full flex items-center">
           <div>
@@ -29,7 +39,9 @@ export default function PhoneProtectionPage() {
               <Shield className="h-10 w-10" />
               Phone Protection
             </h1>
-            <p className="text-white/90">Keep your device secure and protected</p>
+            <p className="text-white/90">
+              Keep your device secure and protected
+            </p>
           </div>
         </div>
       </div>
@@ -40,17 +52,19 @@ export default function PhoneProtectionPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Security Status</CardTitle>
-                <CardDescription>Check your device security status</CardDescription>
+                <CardDescription>
+                  Check your device security status
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-center py-8">
-                  <img 
-                    src="/assets/generated/security-shield-transparent.dim_64x64.png" 
-                    alt="Security Shield" 
-                    className={`h-32 w-32 ${isScanning ? 'animate-pulse' : ''}`}
+                  <img
+                    src="/assets/generated/security-shield-transparent.dim_64x64.png"
+                    alt="Security Shield"
+                    className={`h-32 w-32 ${isScanning ? "animate-pulse" : ""}`}
                   />
                 </div>
-                
+
                 {!scanComplete && !isScanning && (
                   <Button onClick={handleScan} className="w-full gap-2">
                     <Shield className="h-4 w-4" />
@@ -61,9 +75,14 @@ export default function PhoneProtectionPage() {
                 {isScanning && (
                   <div className="text-center space-y-2">
                     <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                      <div className="h-full bg-primary animate-pulse" style={{ width: '60%' }} />
+                      <div
+                        className="h-full bg-primary animate-pulse"
+                        style={{ width: "60%" }}
+                      />
                     </div>
-                    <p className="text-sm text-muted-foreground">Scanning your device...</p>
+                    <p className="text-sm text-muted-foreground">
+                      Scanning your device...
+                    </p>
                   </div>
                 )}
 
@@ -71,9 +90,15 @@ export default function PhoneProtectionPage() {
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
                       <CheckCircle className="h-5 w-5" />
-                      <span className="font-semibold">Your device is secure!</span>
+                      <span className="font-semibold">
+                        Your device is secure!
+                      </span>
                     </div>
-                    <Button onClick={handleScan} variant="outline" className="w-full">
+                    <Button
+                      onClick={handleScan}
+                      variant="outline"
+                      className="w-full"
+                    >
                       Scan Again
                     </Button>
                   </div>

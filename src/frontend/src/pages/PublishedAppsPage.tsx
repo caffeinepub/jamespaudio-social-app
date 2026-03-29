@@ -1,26 +1,43 @@
-import { useState, useEffect } from 'react';
-import { AppWindow, ExternalLink, Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
-import { useGetCallerUserProfile, usePublishApp, useGetAllPublishedApps } from '../hooks/useQueries';
-import { toast } from 'sonner';
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Textarea } from "@/components/ui/textarea";
+import { AppWindow, ExternalLink, Plus } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import {
+  useGetAllPublishedApps,
+  useGetCallerUserProfile,
+  usePublishApp,
+} from "../hooks/useQueries";
 
 export default function PublishedAppsPage() {
   const { data: userProfile } = useGetCallerUserProfile();
   const { data: publishedApps = [], isLoading } = useGetAllPublishedApps();
   const publishApp = usePublishApp();
-  const [appForm, setAppForm] = useState({ 
-    title: '', 
-    developerName: '', 
-    link: '', 
-    description: '',
-    previewImage: ''
+  const [appForm, setAppForm] = useState({
+    title: "",
+    developerName: "",
+    link: "",
+    description: "",
+    previewImage: "",
   });
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -29,12 +46,12 @@ export default function PublishedAppsPage() {
 
   const handlePublish = async () => {
     if (!canPublish) {
-      toast.error('You need at least 70 points to publish an app');
+      toast.error("You need at least 70 points to publish an app");
       return;
     }
 
     if (!appForm.title || !appForm.developerName || !appForm.link) {
-      toast.error('Please fill in all required fields');
+      toast.error("Please fill in all required fields");
       return;
     }
 
@@ -42,7 +59,7 @@ export default function PublishedAppsPage() {
     try {
       new URL(appForm.link);
     } catch {
-      toast.error('Please enter a valid URL (e.g., https://example.com)');
+      toast.error("Please enter a valid URL (e.g., https://example.com)");
       return;
     }
 
@@ -52,16 +69,24 @@ export default function PublishedAppsPage() {
         devName: appForm.developerName,
         link: appForm.link,
         description: appForm.description,
-        previewImage: appForm.previewImage || '/assets/generated/published-apps-grid.dim_600x400.png',
+        previewImage:
+          appForm.previewImage ||
+          "/assets/generated/published-apps-grid.dim_600x400.png",
       });
-      toast.success('App published successfully!');
-      setAppForm({ title: '', developerName: '', link: '', description: '', previewImage: '' });
+      toast.success("App published successfully!");
+      setAppForm({
+        title: "",
+        developerName: "",
+        link: "",
+        description: "",
+        previewImage: "",
+      });
       setDialogOpen(false);
     } catch (error: any) {
-      if (error.message?.includes('Insufficient points')) {
-        toast.error('You need at least 70 points to publish apps');
+      if (error.message?.includes("Insufficient points")) {
+        toast.error("You need at least 70 points to publish apps");
       } else {
-        toast.error('Failed to publish app. Please try again.');
+        toast.error("Failed to publish app. Please try again.");
       }
     }
   };
@@ -69,11 +94,19 @@ export default function PublishedAppsPage() {
   return (
     <div className="h-full flex flex-col">
       <div className="relative h-48 bg-gradient-to-br from-apps-primary via-apps-secondary to-apps-accent overflow-hidden">
-        <img src="/assets/generated/published-apps-grid.dim_600x400.png" alt="Apps" className="absolute inset-0 w-full h-full object-cover opacity-20" />
+        <img
+          src="/assets/generated/published-apps-grid.dim_600x400.png"
+          alt="Apps"
+          className="absolute inset-0 w-full h-full object-cover opacity-20"
+        />
         <div className="relative z-10 container mx-auto px-4 h-full flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold text-white mb-2">Published Apps</h1>
-            <p className="text-white/90">Discover apps created by our community</p>
+            <h1 className="text-4xl font-bold text-white mb-2">
+              Published Apps
+            </h1>
+            <p className="text-white/90">
+              Discover apps created by our community
+            </p>
           </div>
           <Badge variant="secondary" className="text-lg px-4 py-2">
             Your Points: {userPoints}
@@ -97,8 +130,8 @@ export default function PublishedAppsPage() {
                   <DialogHeader>
                     <DialogTitle>Publish Your App</DialogTitle>
                     <DialogDescription>
-                      {canPublish 
-                        ? 'Share your app with the community (requires 70 points)'
+                      {canPublish
+                        ? "Share your app with the community (requires 70 points)"
                         : `You need ${70 - userPoints} more points to publish apps`}
                     </DialogDescription>
                   </DialogHeader>
@@ -108,7 +141,9 @@ export default function PublishedAppsPage() {
                       <Input
                         id="appTitle"
                         value={appForm.title}
-                        onChange={(e) => setAppForm({ ...appForm, title: e.target.value })}
+                        onChange={(e) =>
+                          setAppForm({ ...appForm, title: e.target.value })
+                        }
                         placeholder="Enter app name"
                       />
                     </div>
@@ -117,7 +152,12 @@ export default function PublishedAppsPage() {
                       <Input
                         id="developer"
                         value={appForm.developerName}
-                        onChange={(e) => setAppForm({ ...appForm, developerName: e.target.value })}
+                        onChange={(e) =>
+                          setAppForm({
+                            ...appForm,
+                            developerName: e.target.value,
+                          })
+                        }
                         placeholder="Enter developer name"
                       />
                     </div>
@@ -127,7 +167,9 @@ export default function PublishedAppsPage() {
                         id="link"
                         type="url"
                         value={appForm.link}
-                        onChange={(e) => setAppForm({ ...appForm, link: e.target.value })}
+                        onChange={(e) =>
+                          setAppForm({ ...appForm, link: e.target.value })
+                        }
                         placeholder="https://your-app-link.com"
                       />
                     </div>
@@ -136,17 +178,22 @@ export default function PublishedAppsPage() {
                       <Textarea
                         id="description"
                         value={appForm.description}
-                        onChange={(e) => setAppForm({ ...appForm, description: e.target.value })}
+                        onChange={(e) =>
+                          setAppForm({
+                            ...appForm,
+                            description: e.target.value,
+                          })
+                        }
                         placeholder="Describe your app..."
                         rows={3}
                       />
                     </div>
-                    <Button 
-                      onClick={handlePublish} 
-                      disabled={publishApp.isPending || !canPublish} 
+                    <Button
+                      onClick={handlePublish}
+                      disabled={publishApp.isPending || !canPublish}
                       className="w-full"
                     >
-                      {publishApp.isPending ? 'Publishing...' : 'Publish App'}
+                      {publishApp.isPending ? "Publishing..." : "Publish App"}
                     </Button>
                   </div>
                 </DialogContent>
@@ -157,7 +204,8 @@ export default function PublishedAppsPage() {
               <Card className="border-warning bg-warning/5">
                 <CardContent className="pt-6">
                   <p className="text-sm text-warning-foreground">
-                    You need at least 70 points to publish apps. Keep interacting with the platform to earn more points!
+                    You need at least 70 points to publish apps. Keep
+                    interacting with the platform to earn more points!
                   </p>
                 </CardContent>
               </Card>
@@ -176,13 +224,18 @@ export default function PublishedAppsPage() {
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-12">
                   <AppWindow className="h-16 w-16 text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground text-center">No apps published yet. Be the first to share your creation!</p>
+                  <p className="text-muted-foreground text-center">
+                    No apps published yet. Be the first to share your creation!
+                  </p>
                 </CardContent>
               </Card>
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {publishedApps.map((app) => (
-                  <Card key={app.title + app.creatorId.toString()} className="hover:shadow-lg transition-shadow">
+                  <Card
+                    key={app.title + app.creatorId.toString()}
+                    className="hover:shadow-lg transition-shadow"
+                  >
                     <CardHeader>
                       <CardTitle className="text-lg flex items-center gap-2">
                         <AppWindow className="h-5 w-5" />
@@ -192,10 +245,21 @@ export default function PublishedAppsPage() {
                     </CardHeader>
                     <CardContent className="space-y-3">
                       {app.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-2">{app.description}</p>
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {app.description}
+                        </p>
                       )}
-                      <Button variant="outline" size="sm" className="w-full gap-2" asChild>
-                        <a href={app.link} target="_blank" rel="noopener noreferrer">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full gap-2"
+                        asChild
+                      >
+                        <a
+                          href={app.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
                           <ExternalLink className="h-4 w-4" />
                           Open App
                         </a>

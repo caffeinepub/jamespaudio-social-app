@@ -1,17 +1,20 @@
-import { useState } from 'react';
-import { useGetDirectMessagePartners, useSearchProfiles } from '../hooks/useQueries';
-import { Card } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
-import ChatList from '../components/ChatList';
-import ChatWindow from '../components/ChatWindow';
-import type { Principal } from '@dfinity/principal';
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import type { Principal } from "@dfinity/principal";
+import { Search } from "lucide-react";
+import { useState } from "react";
+import ChatList from "../components/ChatList";
+import ChatWindow from "../components/ChatWindow";
+import {
+  useGetDirectMessagePartners,
+  useSearchProfiles,
+} from "../hooks/useQueries";
 
 export default function ChatsPage() {
   const { data: dmPartners = [] } = useGetDirectMessagePartners();
   const [selectedUserId, setSelectedUserId] = useState<Principal | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const { data: searchResults = [] } = useSearchProfiles(searchQuery);
 
   // Convert DM partners to string array for filtering
@@ -53,7 +56,9 @@ export default function ChatsPage() {
         ) : (
           <div className="flex-1 flex items-center justify-center">
             <Card className="p-8 text-center">
-              <p className="text-muted-foreground">Select a chat to start messaging</p>
+              <p className="text-muted-foreground">
+                Select a chat to start messaging
+              </p>
             </Card>
           </div>
         )}
@@ -62,7 +67,10 @@ export default function ChatsPage() {
       {/* Mobile Chat Window */}
       {selectedUserId && (
         <div className="fixed inset-0 bg-background z-50 sm:hidden">
-          <ChatWindow userId={selectedUserId} onBack={() => setSelectedUserId(null)} />
+          <ChatWindow
+            userId={selectedUserId}
+            onBack={() => setSelectedUserId(null)}
+          />
         </div>
       )}
     </div>

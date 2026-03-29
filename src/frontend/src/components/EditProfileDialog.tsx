@@ -1,19 +1,18 @@
-import { useState, useEffect } from 'react';
-import { useUpdateProfile } from '../hooks/useQueries';
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
-import type { UserProfile } from '../backend';
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import type { UserProfile } from "../backend";
+import { useUpdateProfile } from "../hooks/useQueries";
 
 interface EditProfileDialogProps {
   open: boolean;
@@ -21,9 +20,13 @@ interface EditProfileDialogProps {
   currentProfile: UserProfile;
 }
 
-export default function EditProfileDialog({ open, onOpenChange, currentProfile }: EditProfileDialogProps) {
+export default function EditProfileDialog({
+  open,
+  onOpenChange,
+  currentProfile,
+}: EditProfileDialogProps) {
   const [bio, setBio] = useState(currentProfile.bio);
-  const [status, setStatus] = useState(currentProfile.status);
+  const [_status, setStatus] = useState(currentProfile.status);
   const updateProfile = useUpdateProfile();
 
   useEffect(() => {
@@ -41,10 +44,10 @@ export default function EditProfileDialog({ open, onOpenChange, currentProfile }
         bio: bio.trim(),
         profilePicture: currentProfile.profilePicture,
       });
-      toast.success('Profile updated successfully!');
+      toast.success("Profile updated successfully!");
       onOpenChange(false);
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update profile');
+    } catch (error: unknown) {
+      toast.error((error as Error).message || "Failed to update profile");
     }
   };
 
@@ -79,8 +82,14 @@ export default function EditProfileDialog({ open, onOpenChange, currentProfile }
             >
               Cancel
             </Button>
-            <Button type="submit" className="flex-1" disabled={updateProfile.isPending}>
-              {updateProfile.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Button
+              type="submit"
+              className="flex-1"
+              disabled={updateProfile.isPending}
+            >
+              {updateProfile.isPending && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               Save Changes
             </Button>
           </div>
